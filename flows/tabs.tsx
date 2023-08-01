@@ -10,22 +10,40 @@ const Tab = createMaterialBottomTabNavigator();
 export default function Tabs() {
   return (
     <Tab.Navigator
-      initialRouteName='Feed'
-      activeColor='#e91e63'
-      barStyle={{ backgroundColor: 'tomato' }}
+      initialRouteName="Feed"
+      activeColor="#e91e63"
+      barStyle={{ backgroundColor: "tomato" }}
     >
       <Tab.Screen
         name="Feed"
         component={Feed}
         options={{
-          tabBarLabel: 'Home',
+          tabBarLabel: "Home",
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="home" color={color} size={26} />
           ),
         }}
       />
-      <Tab.Screen name="Search" component={Search} />
-      <Tab.Screen name="Profile" component={Profile} />
+      <Tab.Screen
+        name="Search"
+        component={Search}
+        options={{
+          tabBarLabel: "Search",
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="magnify" color={color} size={26} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={Profile}
+        options={{
+          tabBarLabel: "Profile",
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="account" color={color} size={26} />
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 }
