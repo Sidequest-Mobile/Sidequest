@@ -4,6 +4,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Feed from './community/feed';
 import Profile from './account/profile';
 import Search from './consume/search';
+import CreateQuest from './create/creationForm';
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -31,6 +32,16 @@ export default function Tabs() {
           tabBarLabel: "Search",
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons name="magnify" color={color} size={26} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="CreateQuest"
+        component={CreateQuest}
+        options={{
+          tabBarLabel: "Create",
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="creation" color={color} size={26} />
           ),
         }}
       />
