@@ -1,6 +1,5 @@
 import app from '../firebaseConfig.js';
+import { getFirestore } from "firebase/firestore"
+let firestore = getFirestore(app)
 
-var auth = app.auth()
-var database = app.database();
-
-export default { auth, database };
+export default  { app, firestore } ;
