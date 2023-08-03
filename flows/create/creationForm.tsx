@@ -20,15 +20,17 @@ export default function CreateQuest() {
   const [type, setType] = useState('undecided');
   const [tagline, setTagline] = useState('');
   const [description, setDescription] = useState('');
-  const [tags, setTags] = useState([]);
-  const [tagText,setTagText] = useState('');
+  let tagsInit: Array<string> = []
+  const [tags, setTags] = useState(tagsInit);
+  const [tagText, setTagText] = useState('');
   // Quiz States
   const [quizQuestion, setQuizQuestion] = useState('');
   const [quizCorrectAnswer, setQuizCorrectAnswer] = useState('');
-  const [quizIncorrectAnswers, setQuizIncorrectAnswers] = useState([]);
+  let quiz: Array<string> = []
+  const [quizIncorrectAnswers, setQuizIncorrectAnswers] = useState(quiz);
   // Media States
   const [satisfyingCondition, setSatisfyingCondition] = useState('');
-  const [exampleURL,setExampleURL] = useState('')
+  const [exampleURL, setExampleURL] = useState('')
   // Location States
   const [assignedLocation, setAssignedLocation] = useState('')
 
@@ -42,16 +44,29 @@ export default function CreateQuest() {
   // we'll need a way to "upload" that file, then store a URL as a state for the optional picture.
   // When we press "submit" there should be some data validation- then if the thing passes then we'll make a document with the published property
   // When we press "save" we will make a document/ update the document with the properties, but published as false.
+  let addTag = function(): void {
+    setTags([...tags, tagText])
 
+
+  }
 
 
   return (
     <View style={styles.container}>
       <Text>Create Quest</Text>
       <Text>Tagline</Text>
-      <TextInput/>
+      <TextInput
+      onChangeText={setTagline}
+      value={tagline}
+      placeholder='This Quest in one sentence'/>
+
       <Text>Description</Text>
-      <TextInput/>
+      <TextInput
+      onChangeText={setDescription}
+      value={description}
+      placeholder="Type a description of your quest here"
+      />
+
       <Text>Picture, optional</Text>
       <Text>Quest Type</Text>
 
@@ -87,8 +102,11 @@ export default function CreateQuest() {
 
       <Text>Tags</Text>
 
-      <TextInput/>
-      <Button title='Add Tag'/>
+      <TextInput
+      onChangeText={setTagText}
+      value={tagText}
+      placeholder='Write a tag for your quest to be identified by'/>
+      <Button title='Add Tag' />
 
       {type === 'quiz' && (
       <>
