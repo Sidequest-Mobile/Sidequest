@@ -1,11 +1,14 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import UploadImage from '../components/uploadImage';
+import UploadImage from './components/uploadImage';
 
 export default function Profile() {
   return (
     <View style={styles.container}>
       <UploadImage />
+      <Text>Username</Text>
+      <Text>Bio</Text>
+      <Text>Achievements</Text>
     </View>
   );
 }

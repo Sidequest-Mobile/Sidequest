@@ -21,7 +21,7 @@ export default function UploadImage() {
     <View style={imageUploaderStyles.container}>
       <View style={imageUploaderStyles.imageContainer}>
         {
-            image  && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />
+            image  && <Image source={{ uri: image }} style={imageUploaderStyles.image} />
         }
       </View>
       <View style={imageUploaderStyles.uploadBtnContainer}>
@@ -46,6 +46,9 @@ const imageUploaderStyles = StyleSheet.create({
       position: 'relative',
       borderRadius: 999,
       overflow: 'hidden',
+    },
+    image: {
+      flex: 1,
     },
     uploadBtnContainer: {
         position: 'absolute',
