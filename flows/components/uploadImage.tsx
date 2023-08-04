@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Image, View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { AntDesign } from '@expo/vector-icons';
+import { Image, View, TouchableOpacity, StyleSheet } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as ImagePicker from 'expo-image-picker';
 
 export default function UploadImage() {
@@ -18,41 +18,46 @@ export default function UploadImage() {
     }
   };
   return (
-            <View style={imageUploaderStyles.container}>
-                {
-                    image  && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />
-                }
-                    <View style={imageUploaderStyles.uploadBtnContainer}>
-                        <TouchableOpacity onPress={addImage} style={imageUploaderStyles.uploadBtn} >
-                            <Text>{image ? 'Edit' : 'Upload'} Image</Text>
-                            <AntDesign name="plus" size={20} color="black" />
-                        </TouchableOpacity>
-                    </View>
-            </View>
+    <View style={imageUploaderStyles.container}>
+      <View style={imageUploaderStyles.imageContainer}>
+        {
+            image  && <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />
+        }
+      </View>
+      <View style={imageUploaderStyles.uploadBtnContainer}>
+        <TouchableOpacity onPress={addImage} >
+          <MaterialCommunityIcons name="plus" size={20} color="white" />
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
-const imageUploaderStyles=StyleSheet.create({
-    container:{
-        elevation:2,
-        height:200,
-        width:200,
-        backgroundColor:'#efefef',
-        position:'relative',
-        borderRadius:999,
-        overflow:'hidden',
+const imageUploaderStyles = StyleSheet.create({
+    container: {
+      display: 'flex',
+      position: 'absolute',
+      top: '10%',
+      left: '5%',
     },
-    uploadBtnContainer:{
-        opacity:0.7,
-        position:'absolute',
-        right:0,
-        bottom:0,
-        backgroundColor:'lightgrey',
-        width:'100%',
-        height:'25%',
+    imageContainer: {
+      height: 150,
+      width: 150,
+      backgroundColor: '#efefef',
+      position: 'relative',
+      borderRadius: 999,
+      overflow: 'hidden',
     },
-    uploadBtn:{
-        display:'flex',
-        alignItems:"center",
-        justifyContent:'center'
-    }
+    uploadBtnContainer: {
+        position: 'absolute',
+        right: '10%',
+        bottom: 0,
+        borderRadius: 999,
+        borderWidth: 3,
+        borderColor: 'white',
+        backgroundColor: 'cornflowerblue',
+        width: 30,
+        height: 30,
+        alignItems: "center",
+        justifyContent: 'center'
+    },
 })

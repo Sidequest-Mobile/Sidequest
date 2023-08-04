@@ -5,7 +5,6 @@ import UploadImage from '../components/uploadImage';
 export default function Profile() {
   return (
     <View style={styles.container}>
-      <Text>User Profile goes here!</Text>
       <UploadImage />
     </View>
   );
