@@ -1,18 +1,18 @@
 import * as ImagePicker from 'expo-image-picker';
-import React, { CSSProperties, useState } from 'react';
-import { Image, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { Image, ImageStyle, StyleProp, TouchableOpacity, View, ViewStyle } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-type UploadImageProps = {
+type styleTypes = {
   style: {
-    container?: CSSProperties;
-    imageContainer?: CSSProperties;
-    image?: CSSProperties;
-    uploadBtnContainer?: CSSProperties;
+    container?: StyleProp<ViewStyle>;
+    imageContainer?: StyleProp<ViewStyle>;
+    image?: StyleProp<ImageStyle>;
+    uploadBtnContainer?: StyleProp<ViewStyle>;
   }
 };
 
-export default function UploadImage({ style }: UploadImageProps) {
+export default function UploadImage({ style }: styleTypes) {
   const [image, setImage] = useState('');
   const addImage = async () => {
     let _image = await ImagePicker.launchImageLibraryAsync({
@@ -41,35 +41,3 @@ export default function UploadImage({ style }: UploadImageProps) {
     </View>
   );
 }
-// const imageUploaderStyles = StyleSheet.create({
-//     container: {
-//       display: 'flex',
-//       position: 'absolute',
-//       top: '10%',
-//       left: '5%',
-//     },
-//     imageContainer: {
-//       height: 150,
-//       width: 150,
-//       backgroundColor: '#efefef',
-//       position: 'relative',
-//       borderRadius: 999,
-//       overflow: 'hidden',
-//     },
-//     image: {
-//       flex: 1,
-//     },
-//     uploadBtnContainer: {
-//         position: 'absolute',
-//         right: '10%',
-//         bottom: 0,
-//         borderRadius: 999,
-//         borderWidth: 3,
-//         borderColor: 'white',
-//         backgroundColor: 'cornflowerblue',
-//         width: 30,
-//         height: 30,
-//         alignItems: "center",
-//         justifyContent: 'center'
-//     },
-// })
