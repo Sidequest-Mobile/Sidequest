@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
 import firebase from '../firebase.js';
 
 let quests = collection(firebase.firestore, '/quests');
@@ -36,6 +37,8 @@ export default function CreateQuest() {
 
   const [latitude, setLatitude] = useState(0);
   const [longitude, setLongitude] = useState(0);
+  const [showMap, setShowMap] = useState(false);
+
   async function getLoc() {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
@@ -177,6 +180,19 @@ export default function CreateQuest() {
         <>
           <Text>Location</Text>
           <Button title="Current Location" onPress={getLoc} />
+          <Button title="Find on A Map" onPress={() => setShowMap(true)} />
+          <MapView
+            style={{ width: '50%', height: '50%' }}
+            region={{
+              latitude: 40.2840959,
+              longitude: -111.6476079,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}>
+            <Marker
+              coordinate={{ latitude: 40.2840959, longitude: -111.6476079 }}
+            />
+          </MapView>
         </>
       )}
 
