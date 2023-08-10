@@ -3,9 +3,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import UploadImage from './components/uploadImage';
 
 export default function Profile() {
+  const UploadImageProps = {
+    style: profPicStyles,
+  }
   return (
     <View style={styles.container}>
-      <UploadImage style={profPicStyles}/>
+      <UploadImage {...UploadImageProps}/>
       <Text>Username</Text>
       <Text>Bio</Text>
       <Text>Achievements</Text>

@@ -4,7 +4,12 @@ import { Image, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type UploadImageProps = {
-  style: CSSProperties;
+  style: {
+    container?: CSSProperties;
+    imageContainer?: CSSProperties;
+    image?: CSSProperties;
+    uploadBtnContainer?: CSSProperties;
+  }
 };
 
 export default function UploadImage({ style }: UploadImageProps) {
