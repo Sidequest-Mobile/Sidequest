@@ -11,9 +11,17 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Sidequest to use your location.",
+          "locationWhenInUsePermission": "Allow Sidequest to use your location.",
+          "locationAlwaysPermission": "Allow Sidequest to use your location"
+        }
+      ]
     ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true
     },

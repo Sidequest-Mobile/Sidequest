@@ -1,3 +1,4 @@
+import * as Location from 'expo-location';
 import { collection } from 'firebase/firestore';
 import React, { useState } from 'react';
 import {
@@ -33,6 +34,23 @@ export default function CreateQuest() {
   // Location States
   const [assignedLocation, setAssignedLocation] = useState('');
 
+  const [latitude, setLatitude] = useState(0);
+  const [longitude, setLongitude] = useState(0);
+  async function getLoc() {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      return;
+    }
+    let currentPosition = await Location.getCurrentPositionAsync({});
+    setLatitude(currentPosition.coords.latitude);
+    setLongitude(currentPosition.coords.longitude);
+    console.log(
+      'Latitude:',
+      currentPosition.coords.latitude,
+      '   Longitude:',
+      currentPosition.coords.longitude,
+    );
+  }
   // each pressable should adjust the "type" state to match it's internal text value. This should also correlate to the conditional display logic.
   // Changing type should also reset the states for the unchosen types
   // When that type is chosen, the pressable should have a change to the style of the view to show that it is the chosen type.
@@ -158,6 +176,7 @@ export default function CreateQuest() {
       {type === 'location' && (
         <>
           <Text>Location</Text>
+          <Button title="Current Location" onPress={getLoc} />
         </>
       )}
 
