@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { Image, View, TouchableOpacity, StyleSheet } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as ImagePicker from 'expo-image-picker';
+import React, { CSSProperties, useState } from 'react';
+import { Image, TouchableOpacity, View } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-export default function UploadImage() {
+type UploadImageProps = {
+  style: CSSProperties;
+};
+
+export default function UploadImage({ style }: UploadImageProps) {
   const [image, setImage] = useState('');
   const addImage = async () => {
     let _image = await ImagePicker.launchImageLibraryAsync({
@@ -18,13 +22,13 @@ export default function UploadImage() {
     }
   };
   return (
-    <View style={imageUploaderStyles.container}>
-      <View style={imageUploaderStyles.imageContainer}>
+    <View style={style.container}>
+      <View style={style.imageContainer}>
         {
-            image  && <Image source={{ uri: image }} style={imageUploaderStyles.image} />
+            image  && <Image source={{ uri: image }} style={style.image} />
         }
       </View>
-      <View style={imageUploaderStyles.uploadBtnContainer}>
+      <View style={style.uploadBtnContainer}>
         <TouchableOpacity onPress={addImage} >
           <MaterialCommunityIcons name="plus" size={20} color="white" />
         </TouchableOpacity>
@@ -32,35 +36,35 @@ export default function UploadImage() {
     </View>
   );
 }
-const imageUploaderStyles = StyleSheet.create({
-    container: {
-      display: 'flex',
-      position: 'absolute',
-      top: '10%',
-      left: '5%',
-    },
-    imageContainer: {
-      height: 150,
-      width: 150,
-      backgroundColor: '#efefef',
-      position: 'relative',
-      borderRadius: 999,
-      overflow: 'hidden',
-    },
-    image: {
-      flex: 1,
-    },
-    uploadBtnContainer: {
-        position: 'absolute',
-        right: '10%',
-        bottom: 0,
-        borderRadius: 999,
-        borderWidth: 3,
-        borderColor: 'white',
-        backgroundColor: 'cornflowerblue',
-        width: 30,
-        height: 30,
-        alignItems: "center",
-        justifyContent: 'center'
-    },
-})
+// const imageUploaderStyles = StyleSheet.create({
+//     container: {
+//       display: 'flex',
+//       position: 'absolute',
+//       top: '10%',
+//       left: '5%',
+//     },
+//     imageContainer: {
+//       height: 150,
+//       width: 150,
+//       backgroundColor: '#efefef',
+//       position: 'relative',
+//       borderRadius: 999,
+//       overflow: 'hidden',
+//     },
+//     image: {
+//       flex: 1,
+//     },
+//     uploadBtnContainer: {
+//         position: 'absolute',
+//         right: '10%',
+//         bottom: 0,
+//         borderRadius: 999,
+//         borderWidth: 3,
+//         borderColor: 'white',
+//         backgroundColor: 'cornflowerblue',
+//         width: 30,
+//         height: 30,
+//         alignItems: "center",
+//         justifyContent: 'center'
+//     },
+// })
