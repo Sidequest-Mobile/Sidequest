@@ -1,54 +1,41 @@
 import * as ImagePicker from 'expo-image-picker';
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import { getStorage, ref, uploadBytes } from "firebase/storage";
 import React, { useEffect, useState } from 'react';
 import { Image, ImageStyle, StyleProp, TouchableOpacity, View, ViewStyle } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-type styleTypes = {
+type propTypes = {
   style: {
     container?: StyleProp<ViewStyle>;
     imageContainer?: StyleProp<ViewStyle>;
     image?: StyleProp<ImageStyle>;
     uploadBtnContainer?: StyleProp<ViewStyle>;
-  }
+  },
+  url: string;
 };
 
-export default function UploadImage({ style }: styleTypes) {
+export default function UploadImage({ style, url}: propTypes) {
   const [image, setImage] = useState('');
 
+  // Get and create a reference to Firebase Storage
   const storage = getStorage();
   const profilePicRef = ref(storage, `profile.jpg`);
 
+  /*
+    Maybe create another ref that can be used by Benji
+    Pass the photo name or uri as a prop and use it to create ref?
+    How will we know which photo's to download?
+
+    As of right now, everytime we upload a pic, it stores it as
+    'profile.jpg' and overwrites the photo ever time we upload a new one
+    If we were to use this as is somewhere else in the app, it would
+    also overwrite the profile photo.
+   */
+
+
   useEffect(() => {
-    getDownloadURL(profilePicRef)
-      .then((url) => {
-        setImage(url);
-      })
-      .catch((error) => {
-        switch (error.code) {
-          case 'storage/object-not-found':
-            // File doesn't exist
-            break;
-          case 'storage/unauthorized':
-            // User doesn't have permission to access the object
-            break;
-          case 'storage/canceled':
-            // User canceled the upload
-            break;
-          case 'storage/unknown':
-            // Unknown error occurred, inspect the server response
-            break;
-          case 'storage/quota-exceeded':
-            // Free storage quota exceeded
-            break;
-          case 'storage/unauthenticated':
-            // User is unauthenticated
-            break;
-        }
-      });
-  }, []);
-
-
+    setImage(url);
+  }, [url])
 
   const addImage = async () => {
     let _image = await ImagePicker.launchImageLibraryAsync({
