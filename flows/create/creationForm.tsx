@@ -1,6 +1,7 @@
 import * as Location from 'expo-location';
-import { collection } from 'firebase/firestore';
-import React, { useState } from 'react';
+import { addDoc, collection, GeoPoint } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
+
 import {
   Button,
   Pressable,
@@ -14,6 +15,10 @@ import firebase from '../firebase.js';
 
 let quests = collection(firebase.firestore, '/quests');
 let UID: string = '0';
+const DEFAULT_USER_NAME = 'DEFAULT_USER_NAME';
+const DEFAULT_QUEST_IMAGE = 'default.jpg';
+const DEFAULT_EXAMPLE_IMAGE = 'defaultExample.jpg';
+const DEFAULT_QUEST_ID = 12345678;
 
 export default function CreateQuest() {
   // General States
@@ -33,12 +38,13 @@ export default function CreateQuest() {
   const [satisfyingCondition, setSatisfyingCondition] = useState('');
   const [exampleURL, setExampleURL] = useState('');
   // Location States
-  const [assignedLocation, setAssignedLocation] = useState('');
-
   const [latitude, setLatitude] = useState(0);
   const [longitude, setLongitude] = useState(0);
   const [showMap, setShowMap] = useState(false);
 
+  useEffect(() => {
+    getLoc();
+  }, []);
   async function getLoc() {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
@@ -54,9 +60,7 @@ export default function CreateQuest() {
       currentPosition.coords.longitude,
     );
   }
-  // each pressable should adjust the "type" state to match it's internal text value. This should also correlate to the conditional display logic.
-  // Changing type should also reset the states for the unchosen types
-  // When that type is chosen, the pressable should have a change to the style of the view to show that it is the chosen type.
+
   function changeType(newType: string): void {
     setType(newType);
     setQuizQuestion('');
@@ -65,13 +69,8 @@ export default function CreateQuest() {
     setQuizIncorrectAnswers(quiz);
     setSatisfyingCondition('');
     setExampleURL('');
-    setAssignedLocation('');
   }
-  // Choosing location should have a reference to the native Geolocation API.
-  // There should be a way for us to use the native file API to open up an image browser/camera which users can choose a photo/video from
-  // we'll need a way to "upload" that file, then store a URL as a state for the optional picture.
-  // When we press "submit" there should be some data validation- then if the thing passes then we'll make a document with the published property
-  // When we press "save" we will make a document/ update the document with the properties, but published as false.
+
   let addTag = function (): void {
     setTags([...tags, tagText]);
     setTagText('');
@@ -81,6 +80,37 @@ export default function CreateQuest() {
     setQuizIncorrectAnswers([...quizIncorrectAnswers, quizIncorrectAnswer]);
     setQuizIncorrectAnswer('');
   };
+
+  function saveQuest(): void {
+    // Datatype Validation
+  }
+
+  function PublishQuest(): void {
+    // Data Validation
+    addDoc(quests, {
+      type,
+      tagline,
+      description,
+      tags,
+      quest_image_URL: DEFAULT_QUEST_IMAGE,
+
+      quiz_question: quizQuestion,
+      incorrect_answers: quizIncorrectAnswers,
+      correct_answer: quizCorrectAnswer,
+
+      location: new GeoPoint(latitude, longitude),
+
+      pic_satisfying_condition: satisfyingCondition,
+      example_image_URL: DEFAULT_EXAMPLE_IMAGE,
+      questID: DEFAULT_QUEST_ID,
+
+      quality_rating: [0, 0, 0, 0, 0],
+      difficulty_rating: [0, 0, 0, 0],
+
+      creator: DEFAULT_USER_NAME,
+      published: true,
+    }).then(() => console.log('Quest Submitted'));
+  }
 
   return (
     <View style={styles.container}>
@@ -183,14 +213,21 @@ export default function CreateQuest() {
           <Button title="Find on A Map" onPress={() => setShowMap(true)} />
           <MapView
             style={{ width: '50%', height: '50%' }}
-            region={{
-              latitude: 40.2840959,
-              longitude: -111.6476079,
+            mapType="satellite"
+            initialRegion={{
+              latitude: latitude,
+              longitude: longitude,
               latitudeDelta: 0.0922,
               longitudeDelta: 0.0421,
             }}>
             <Marker
-              coordinate={{ latitude: 40.2840959, longitude: -111.6476079 }}
+              draggable={true}
+              coordinate={{ latitude: latitude, longitude: longitude }}
+              onDragEnd={e => {
+                setLatitude(e.nativeEvent.coordinate.latitude);
+                setLongitude(e.nativeEvent.coordinate.longitude);
+                console.log('End location', e.nativeEvent.coordinate);
+              }}
             />
           </MapView>
         </>
@@ -209,7 +246,7 @@ export default function CreateQuest() {
         </>
       )}
       <Button title="Save" />
-      <Button title="Post" />
+      <Button title="Post" onPress={PublishQuest} />
     </View>
   );
 }
