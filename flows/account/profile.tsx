@@ -1,14 +1,33 @@
 import { getDownloadURL, getStorage, ref } from "firebase/storage";
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, View } from 'react-native';
+import TextEditForm from './components/textEditForm';
 import UploadImage from './components/uploadImage';
 
 export default function Profile() {
     const [profPicUrl, setProfPicUrl] = useState('');
+    const [username, setUsername] = useState('');
+    const [bio, setBio] = useState('');
+    const [showEdit, setShowEdit] = useState(false);
+
 
     // Get and create a reference to Firebase Storage
     const storage = getStorage();
     const profilePicRef = ref(storage, `profile.jpg`);
+
+    // setter functions for username and bio
+    const updateUsername = (newUsername: string):void => {
+      setUsername(newUsername)
+    }
+
+    const updateBio = (newBio: string):void => {
+      setBio(newBio)
+    }
+
+    // function to toggle show edits
+    const openCloseEdits = (toggle: boolean):void => {
+      setShowEdit(toggle);
+    }
 
 
     useEffect(() => {
@@ -44,14 +63,31 @@ export default function Profile() {
   const UploadImageProps = {
     style: profPicStyles,
     url: profPicUrl,
+    storageLocation: 'profile.jpg'
   };
+
+  const TextEditProps = {
+    updateUsername,
+    updateBio,
+    openCloseEdits,
+    username,
+    bio,
+  }
 
   return (
     <View style={styles.container}>
       <UploadImage {...UploadImageProps}/>
-      <Text>Username</Text>
-      <Text>Bio</Text>
+      <Text>Username - {username}</Text>
+      <Text>Bio - {bio}</Text>
       <Text>Achievements</Text>
+      <Button
+        title="Edit"
+        color="red"
+        onPress={() => setShowEdit(true)}
+      />
+      <>
+        {showEdit && <TextEditForm {...TextEditProps} />}
+      </>
     </View>
   );
 }
