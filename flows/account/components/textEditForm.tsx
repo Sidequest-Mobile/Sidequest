@@ -13,14 +13,6 @@ export default function TextEditForm({updateUsername, updateBio, openCloseEdits,
   const [usernameText, onChangeUsernameText] = useState('hello');
   const [bioText, onChangeBioText] = useState('');
 
-  // need a function to update the username and bio on submit
-  // const editBio = (newBio: string):void => {
-  //   updateBio(newBio);
-  // }
-
-  // const editUsername = (newUsername: string):void => {
-  //   updateUsername(newUsername);
-  // }
   useEffect(() => {
     onChangeUsernameText(username);
     onChangeBioText(bio);
@@ -38,6 +30,12 @@ export default function TextEditForm({updateUsername, updateBio, openCloseEdits,
         onChangeText={onChangeBioText}
         value={bioText}
 
+      />
+      <Button
+        title="Cancel"
+        onPress={() => {
+          openCloseEdits(false);
+        }}
       />
       <Button
         title="Save"
