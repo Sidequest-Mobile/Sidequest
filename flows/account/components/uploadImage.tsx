@@ -12,26 +12,11 @@ type propTypes = {
     uploadBtnContainer?: StyleProp<ViewStyle>;
   },
   url: string;
+  storageLocation: string;
 };
 
-export default function UploadImage({ style, url}: propTypes) {
+export default function UploadImage({ style, url, storageLocation}: propTypes) {
   const [image, setImage] = useState('');
-
-  // Get and create a reference to Firebase Storage
-  const storage = getStorage();
-  const profilePicRef = ref(storage, `profile.jpg`);
-
-  /*
-    Maybe create another ref that can be used by Benji
-    Pass the photo name or uri as a prop and use it to create ref?
-    How will we know which photo's to download?
-
-    As of right now, everytime we upload a pic, it stores it as
-    'profile.jpg' and overwrites the photo ever time we upload a new one
-    If we were to use this as is somewhere else in the app, it would
-    also overwrite the profile photo.
-   */
-
 
   useEffect(() => {
     setImage(url);
@@ -46,10 +31,14 @@ export default function UploadImage({ style, url}: propTypes) {
     });
 
     if (!_image.canceled) {
+      // Get and create a reference to Firebase Storage
+      const storage = getStorage();
+      const photoRef = ref(storage, storageLocation);
+
       const response = await fetch(_image.assets[0].uri);
       const blob = await response.blob();
 
-      uploadBytes(profilePicRef, blob)
+      uploadBytes(photoRef, blob)
         .then((snapshot) => {
           console.log('Uploaded a blob or file!', snapshot);
         })
