@@ -20,7 +20,7 @@ export default function UploadImage({ style, url, storageLocation}: propTypes) {
 
   // Get and create a reference to Firebase Storage
   const storage = getStorage();
-  const profilePicRef = ref(storage, storageLocation);
+  const photoRef = ref(storage, storageLocation);
 
   /*
     Maybe create another ref that can be used by Benji
@@ -50,7 +50,7 @@ export default function UploadImage({ style, url, storageLocation}: propTypes) {
       const response = await fetch(_image.assets[0].uri);
       const blob = await response.blob();
 
-      uploadBytes(profilePicRef, blob)
+      uploadBytes(photoRef, blob)
         .then((snapshot) => {
           console.log('Uploaded a blob or file!', snapshot);
         })
