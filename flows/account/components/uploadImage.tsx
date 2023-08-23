@@ -12,14 +12,15 @@ type propTypes = {
     uploadBtnContainer?: StyleProp<ViewStyle>;
   },
   url: string;
+  storageLocation: string;
 };
 
-export default function UploadImage({ style, url}: propTypes) {
+export default function UploadImage({ style, url, storageLocation}: propTypes) {
   const [image, setImage] = useState('');
 
   // Get and create a reference to Firebase Storage
   const storage = getStorage();
-  const profilePicRef = ref(storage, `profile.jpg`);
+  const profilePicRef = ref(storage, storageLocation);
 
   /*
     Maybe create another ref that can be used by Benji

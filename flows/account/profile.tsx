@@ -24,6 +24,11 @@ export default function Profile() {
       setBio(newBio)
     }
 
+    // function to toggle show edits
+    const openCloseEdits = (toggle: boolean):void => {
+      setShowEdit(toggle);
+    }
+
 
     useEffect(() => {
       getDownloadURL(profilePicRef)
@@ -58,18 +63,22 @@ export default function Profile() {
   const UploadImageProps = {
     style: profPicStyles,
     url: profPicUrl,
+    storageLocation: 'profile.jpg'
   };
 
   const TextEditProps = {
     updateUsername,
     updateBio,
+    openCloseEdits,
+    username,
+    bio,
   }
 
   return (
     <View style={styles.container}>
       <UploadImage {...UploadImageProps}/>
-      <Text>Username</Text>
-      <Text>Bio</Text>
+      <Text>Username - {username}</Text>
+      <Text>Bio - {bio}</Text>
       <Text>Achievements</Text>
       <Button
         title="Edit"
