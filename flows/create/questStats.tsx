@@ -7,7 +7,6 @@ function QuestStats({ navigation }) {
         <Text>Go Back to My Created Quests</Text>
       </Pressable>
       <Text>
-        {' '}
         List of Stats and performance of Quests that this user has created
       </Text>
     </View>

@@ -9,7 +9,7 @@ function Login({ navigation }) {
   const [password, setPassword] = useState('');
   const authSuccess = useContext(appContext);
 
-  function onLoginPress({ navigation }) {
+  function onLoginPress() {
     signInWithEmailAndPassword(firebase.auth, email, password)
       .then(() => {
         console.log('User signed in!');
@@ -41,7 +41,7 @@ function Login({ navigation }) {
         placeholder="*****"
         value={password}
         onChangeText={e => setPassword(e)}></TextInput>
-      <Button title="Log In" onPress={onLoginPress}></Button>
+      <Button title="Log In" onPress={e => onLoginPress()}></Button>
     </View>
   );
 }
