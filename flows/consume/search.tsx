@@ -1,38 +1,36 @@
-
-import React from "react";
-import { StyleSheet, TextInput, View, Keyboard, Button } from "react-native";
-import { Feather, Entypo } from "@expo/vector-icons";
+import { Entypo, Feather } from '@expo/vector-icons';
+import React from 'react';
+import { Button, Keyboard, StyleSheet, TextInput, View } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
     margin: 15,
-    justifyContent: "flex-start",
-    alignItems: "center",
-    flexDirection: "row",
-    width: "90%",
-
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    flexDirection: 'row',
+    width: '90%',
   },
   searchBar__unclicked: {
     padding: 10,
-    flexDirection: "row",
-    width: "95%",
-    backgroundColor: "#d9dbda",
+    flexDirection: 'row',
+    width: '95%',
+    backgroundColor: '#d9dbda',
     borderRadius: 20,
-    alignItems: "center",
+    alignItems: 'center',
   },
   searchBar__clicked: {
     padding: 10,
-    flexDirection: "row",
-    width: "80%",
-    backgroundColor: "#d9dbda",
+    flexDirection: 'row',
+    width: '80%',
+    backgroundColor: '#d9dbda',
     borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "space-evenly",
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
   },
   input: {
     fontSize: 20,
     marginLeft: 10,
-    width: "90%",
+    width: '90%',
   },
 });
 
@@ -41,18 +39,24 @@ type SearchProps = {
   searchPhrase: string;
   setSearchPhrase: string;
   setClicked: boolean;
-}
+};
 
-const SearchBar = ({clicked, searchPhrase, setSearchPhrase, setClicked}: SearchProps) => {
+const SearchBar = ({
+  clicked,
+  searchPhrase,
+  setSearchPhrase,
+  setClicked,
+  navigation,
+}: SearchProps) => {
   return (
     <View style={styles.container}>
+      <Button
+        title="Placeholder for Quest"
+        onPress={e => navigation.navigate('Quest')}></Button>
       <View
         style={
-          clicked
-            ? styles.searchBar__clicked
-            : styles.searchBar__unclicked
-        }
-      >
+          clicked ? styles.searchBar__clicked : styles.searchBar__unclicked
+        }>
         {/* search Icon */}
         <Feather
           name="search"
@@ -72,9 +76,15 @@ const SearchBar = ({clicked, searchPhrase, setSearchPhrase, setClicked}: SearchP
         />
         {/* cross Icon, depending on whether the search bar is clicked or not */}
         {clicked && (
-          <Entypo name="cross" size={20} color="black" style={{ padding: 1 }} onPress={() => {
-              setSearchPhrase("")
-          }}/>
+          <Entypo
+            name="cross"
+            size={20}
+            color="black"
+            style={{ padding: 1 }}
+            onPress={() => {
+              setSearchPhrase('');
+            }}
+          />
         )}
       </View>
       {/* cancel button, depending on whether the search bar is clicked or not */}
@@ -85,12 +95,10 @@ const SearchBar = ({clicked, searchPhrase, setSearchPhrase, setClicked}: SearchP
             onPress={() => {
               Keyboard.dismiss();
               setClicked(false);
-            }}
-          ></Button>
+            }}></Button>
         </View>
       )}
     </View>
   );
 };
 export default SearchBar;
-

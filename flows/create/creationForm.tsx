@@ -20,7 +20,7 @@ const DEFAULT_QUEST_IMAGE = 'default.jpg';
 const DEFAULT_EXAMPLE_IMAGE = 'defaultExample.jpg';
 const DEFAULT_QUEST_ID = 12345678;
 
-export default function CreateQuest() {
+export default function CreateQuest({ navigation }) {
   // General States
   const [type, setType] = useState('undecided');
   const [tagline, setTagline] = useState('');
@@ -109,7 +109,10 @@ export default function CreateQuest() {
 
       creator: DEFAULT_USER_NAME,
       published: true,
-    }).then(() => console.log('Quest Submitted'));
+    }).then(() => {
+      console.log('Quest Submitted');
+      navigation.pop();
+    });
   }
 
   return (
