@@ -11,3 +11,5 @@ function Achievements() {
     </View>
   );
 }
+
+export default Achievements;

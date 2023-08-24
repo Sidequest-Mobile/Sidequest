@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, Pressable, Text, View } from 'react-native';
 
-function ValidateLocation() {
+function Rate() {
   return (
     <View>
       <Pressable>
@@ -13,4 +13,4 @@ function ValidateLocation() {
   );
 }
 
-export default ValidateLocation;
+export default Rate;
