@@ -11,9 +11,10 @@ function Login({ navigation }) {
 
   function onLoginPress() {
     signInWithEmailAndPassword(firebase.auth, email, password)
-      .then(() => {
+      .then(userCredential => {
         console.log('User signed in!');
         authSuccess.authSuccess(true);
+        authSuccess.changeUserID(userCredential.user.uid);
       })
       .catch(error => {
         if (error.code === 'auth/user-not-found') {

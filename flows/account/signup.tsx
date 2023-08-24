@@ -10,9 +10,12 @@ function Signup({ navigation }) {
   const authSuccess = useContext(appContext);
 
   function onSignupPress() {
-    createUserWithEmailAndPassword(firebase.auth, email, password).then(() => {
-      authSuccess.authSuccess(true);
-    });
+    createUserWithEmailAndPassword(firebase.auth, email, password).then(
+      userCredential => {
+        authSuccess.authSuccess(true);
+        authSuccess.changeUserID(userCredential.user.uid);
+      },
+    );
   }
   return (
     <View>
