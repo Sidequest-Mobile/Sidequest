@@ -1,5 +1,6 @@
 import * as Location from 'expo-location';
 import { addDoc, collection, GeoPoint } from 'firebase/firestore';
+import { geohashForLocation } from 'geofire-common';
 import React, { useContext, useEffect, useState } from 'react';
 import {
   Button,
@@ -97,6 +98,9 @@ export default function CreateQuest({ navigation }) {
       correct_answer: quizCorrectAnswer,
 
       location: new GeoPoint(latitude, longitude),
+      lat: latitude,
+      lng: longitude,
+      geohash: geohashForLocation([latitude, longitude]),
 
       pic_satisfying_condition: satisfyingCondition,
       example_image_URL: DEFAULT_EXAMPLE_IMAGE,
@@ -115,6 +119,7 @@ export default function CreateQuest({ navigation }) {
   return (
     <View style={styles.container}>
       <Text>Create Quest</Text>
+      <Button title="Post" onPress={PublishQuest} />
       <Text>Tagline</Text>
       <TextInput
         onChangeText={setTagline}
@@ -246,7 +251,6 @@ export default function CreateQuest({ navigation }) {
         </>
       )}
       <Button title="Save" />
-      <Button title="Post" onPress={PublishQuest} />
     </View>
   );
 }

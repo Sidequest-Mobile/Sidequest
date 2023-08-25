@@ -1,8 +1,16 @@
 import * as Location from 'expo-location';
-import { collection, query, where } from 'firebase/firestore';
+import {
+  collection,
+  endAt,
+  getDocs,
+  orderBy,
+  query,
+  startAt,
+} from 'firebase/firestore';
+import { distanceBetween, geohashQueryBounds } from 'geofire-common';
 import React, { useEffect, useState } from 'react';
-import { View } from 'react-native';
-import MapView from 'react-native-maps';
+import { Button, Text, View } from 'react-native';
+import MapView, { Callout, Marker } from 'react-native-maps';
 import firebase from '../firebase';
 const questConnect = collection(firebase.firestore, '/quests');
 
@@ -12,13 +20,60 @@ function Map({ navigation }) {
   const [loaded, setLoaded] = useState(false);
   const [latitudeDelta, setLatitudeDelta] = useState(0.0922);
   const [longitudeDelta, setLongitudeDelta] = useState(0.0421);
+  const [questMarkers, setQuestMarkers] = useState([]);
 
   useEffect(() => {
     getLoc();
   }, []);
   useEffect(() => {
+    getMarkers().then(marks => {
+      let markObjs = marks.map(mark => mark.data());
+      console.log(markObjs);
+      setQuestMarkers([...questMarkers, ...markObjs]);
+    });
     console.log('Queried for Markers');
   }, [latitudeDelta, longitudeDelta, loaded]);
+
+  async function getMarkers() {
+    const bounds = geohashQueryBounds(
+      [latitude, longitude],
+      latitudeDelta * 111 * 1000,
+    );
+    const promises = [];
+    for (const b of bounds) {
+      const q = query(
+        questConnect,
+        orderBy('geohash'),
+        startAt(b[0]),
+        endAt(b[1]),
+      );
+
+      promises.push(getDocs(q));
+    }
+
+    // Collect all the query results together into a single list
+    const snapshots = await Promise.all(promises);
+
+    const matchingDocs = [];
+    for (const snap of snapshots) {
+      for (const doc of snap.docs) {
+        const lat = doc.get('lat');
+        const lng = doc.get('lng');
+
+        // We have to filter out a few false positives due to GeoHash
+        // accuracy, but most will match
+        const distanceInKm = distanceBetween([lat, lng], [latitude, longitude]);
+        const distanceInM = distanceInKm * 1000;
+        if (distanceInM <= latitudeDelta * 111 * 1000) {
+          matchingDocs.push(doc);
+        }
+      }
+    }
+    return matchingDocs;
+  }
+  // Each item in 'bounds' represents a startAt/endAt pair. We have to issue
+  // a separate query for each pair. There can be up to 9 pairs of bounds
+  // depending on overlap, but in most cases there are 4.
 
   async function getLoc() {
     let { status } = await Location.requestForegroundPermissionsAsync();
@@ -60,7 +115,26 @@ function Map({ navigation }) {
             longitude: longitude,
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
-          }}></MapView>
+          }}>
+          {loaded && questMarkers.length > 0
+            ? questMarkers.map(questMarker => {
+                return (
+                  <Marker
+                    coordinate={{
+                      latitude: questMarker.lat,
+                      longitude: questMarker.lng,
+                    }}>
+                    <Callout onPress={e => navigation.navigate('Quest')}>
+                      <View>
+                        <Text>Quest Tagline:{questMarker.tagline}</Text>
+                        <Button title="Learn More!"></Button>
+                      </View>
+                    </Callout>
+                  </Marker>
+                );
+              })
+            : null}
+        </MapView>
       )}
     </View>
   );
@@ -70,10 +144,5 @@ export default Map;
 
 // Benji's Notes:
 // The Map component will end up being a pretty complicated one.
-// First, we'll want to use the location API to ask for permssion to access current location.
-// If that's denied, they should get pushed back to the other Search screen.
-// Then, we'll render the screen with them at the center using their latlong from location.
-// We'll also need to query Firebase and get a range of quests within a certain geographical distance
-// those will be passed in as an array of "Marker" components to the Mapview component
 // they will need to be customized to display a little information call-out when clicked
 // when they press a button on that little callout, they'll need to be navigated to the Quest component with passed along parameters
