@@ -1,7 +1,6 @@
 import * as Location from 'expo-location';
 import { addDoc, collection, GeoPoint } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
-
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Button,
   Pressable,
@@ -11,17 +10,16 @@ import {
   View,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import { appContext } from '../../App';
 import firebase from '../firebase.js';
 
 let quests = collection(firebase.firestore, '/quests');
-let UID: string = '0';
-const DEFAULT_USER_NAME = 'DEFAULT_USER_NAME';
 const DEFAULT_QUEST_IMAGE = 'default.jpg';
 const DEFAULT_EXAMPLE_IMAGE = 'defaultExample.jpg';
-const DEFAULT_QUEST_ID = 12345678;
 
 export default function CreateQuest({ navigation }) {
   // General States
+  let context = useContext(appContext);
   const [type, setType] = useState('undecided');
   const [tagline, setTagline] = useState('');
   const [description, setDescription] = useState('');
@@ -102,12 +100,11 @@ export default function CreateQuest({ navigation }) {
 
       pic_satisfying_condition: satisfyingCondition,
       example_image_URL: DEFAULT_EXAMPLE_IMAGE,
-      questID: DEFAULT_QUEST_ID,
 
       quality_rating: [0, 0, 0, 0, 0],
       difficulty_rating: [0, 0, 0, 0],
 
-      creator: DEFAULT_USER_NAME,
+      creator: context.userID,
       published: true,
     }).then(() => {
       console.log('Quest Submitted');
