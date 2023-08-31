@@ -1,19 +1,61 @@
-import React from 'react';
+import { collection, doc, getDoc } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import { Button, Pressable, Text, View } from 'react-native';
+import firebase from '../firebase';
 
-function Quest({ navigation }) {
+const questConnect = collection(firebase.firestore, '/quests');
+function Quest({ navigation, route }) {
+  const [quest, setQuest] = useState({});
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    getQuest().then(val => {
+      setQuest(val);
+      setLoaded(true);
+      console.log('initialized quest');
+    });
+  }, []);
+
+  async function getQuest() {
+    const docref = doc(questConnect, `${route.params.id}`);
+    const quest = await getDoc(docref);
+    return quest.data();
+  }
+
   return (
     <View>
-      <Text>List of Quests in progress as tiles</Text>
-      <Button
-        title="Go to location complete"
-        onPress={e => navigation.navigate('Validate Media')}></Button>
-      <Button
-        title="Go to Quiz complete"
-        onPress={e => navigation.navigate('Validate Quiz')}></Button>
-      <Button
-        title="Go to Media complete"
-        onPress={e => navigation.navigate('Validate Location')}></Button>
+      {loaded || <Text>Loading</Text>}
+      {loaded && (
+        <>
+          <Text>Tagline:{quest.tagline}</Text>
+          <Text>Image URL:{quest.quest_image_URL}</Text>
+          <Text>Description:{quest.description}</Text>
+          <Text>
+            Note:We might also include difficulty rating and quality rating
+          </Text>
+        </>
+      )}
+      {quest.type === 'media' && (
+        <>
+          <Button
+            title="Go to Media complete"
+            onPress={e => navigation.navigate('Validate Location')}></Button>
+        </>
+      )}
+      {quest.type === 'location' && (
+        <>
+          <Button
+            title="Go to location complete"
+            onPress={e => navigation.navigate('Validate Media')}></Button>
+        </>
+      )}
+      {quest.type === 'quiz' && (
+        <>
+          <Button
+            title="Go to Quiz complete"
+            onPress={e => navigation.navigate('Validate Quiz')}></Button>
+        </>
+      )}
       <Pressable onPress={e => navigation.pop()}>
         <Text>Go Back</Text>
       </Pressable>

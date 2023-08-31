@@ -27,7 +27,11 @@ function Map({ navigation }) {
   }, []);
   useEffect(() => {
     getMarkers().then(marks => {
-      let markObjs = marks.map(mark => mark.data());
+      let markObjs = marks.map(mark => {
+        const data = mark.data();
+        data.questID = mark.id;
+        return data;
+      });
       console.log(markObjs);
       setQuestMarkers([...questMarkers, ...markObjs]);
     });
@@ -57,6 +61,7 @@ function Map({ navigation }) {
     const matchingDocs = [];
     for (const snap of snapshots) {
       for (const doc of snap.docs) {
+        console.log(doc);
         const lat = doc.get('lat');
         const lng = doc.get('lng');
 
@@ -124,7 +129,12 @@ function Map({ navigation }) {
                       latitude: questMarker.lat,
                       longitude: questMarker.lng,
                     }}>
-                    <Callout onPress={e => navigation.navigate('Quest')}>
+                    <Callout
+                      onPress={e =>
+                        navigation.navigate('Quest', {
+                          id: questMarker.questID,
+                        })
+                      }>
                       <View>
                         <Text>Quest Tagline:{questMarker.tagline}</Text>
                         <Button title="Learn More!"></Button>
