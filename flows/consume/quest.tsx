@@ -35,18 +35,26 @@ function Quest({ navigation, route }) {
           </Text>
         </>
       )}
+      {quest.type === 'location' && (
+        <>
+          <Button
+            title="Go to Location complete"
+            onPress={e =>
+              navigation.navigate('Validate Location', {
+                id: quest.questID,
+              })
+            }></Button>
+        </>
+      )}
       {quest.type === 'media' && (
         <>
           <Button
             title="Go to Media complete"
-            onPress={e => navigation.navigate('Validate Location')}></Button>
-        </>
-      )}
-      {quest.type === 'location' && (
-        <>
-          <Button
-            title="Go to location complete"
-            onPress={e => navigation.navigate('Validate Media')}></Button>
+            onPress={e =>
+              navigation.navigate('Validate Media', {
+                id: quest.questID,
+              })
+            }></Button>
         </>
       )}
       {quest.type === 'quiz' && (
