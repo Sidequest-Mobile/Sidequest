@@ -1,27 +1,36 @@
 import * as Location from 'expo-location';
-import { addDoc, collection, GeoPoint } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
-
+import {
+  GeoPoint,
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore';
+import { getDownloadURL, getStorage, ref } from 'firebase/storage';
+import { geohashForLocation } from 'geofire-common';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Button,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import { appContext } from '../../App';
+import UploadImage from '../account/components/uploadImage';
 import firebase from '../firebase.js';
 
 let quests = collection(firebase.firestore, '/quests');
-let UID: string = '0';
-const DEFAULT_USER_NAME = 'DEFAULT_USER_NAME';
 const DEFAULT_QUEST_IMAGE = 'default.jpg';
 const DEFAULT_EXAMPLE_IMAGE = 'defaultExample.jpg';
-const DEFAULT_QUEST_ID = 12345678;
 
 export default function CreateQuest({ navigation }) {
   // General States
+  let context = useContext(appContext);
   const [type, setType] = useState('undecided');
   const [tagline, setTagline] = useState('');
   const [description, setDescription] = useState('');
@@ -36,15 +45,54 @@ export default function CreateQuest({ navigation }) {
   const [quizIncorrectAnswers, setQuizIncorrectAnswers] = useState(quiz);
   // Media States
   const [satisfyingCondition, setSatisfyingCondition] = useState('');
-  const [exampleURL, setExampleURL] = useState('');
+
   // Location States
   const [latitude, setLatitude] = useState(0);
   const [longitude, setLongitude] = useState(0);
   const [showMap, setShowMap] = useState(false);
+  const [questCount, setQuestCount] = useState(0);
+  const [mainPicURL, setMainPicURL] = useState('');
+  const [exampleURL, setExampleURL] = useState('');
+
+  const storage = getStorage();
+  const mainPicRef = ref(storage, `QuestDefault.jpg`);
 
   useEffect(() => {
     getLoc();
+    setCount();
+    getQuestDefault();
   }, []);
+
+  async function getQuestDefault() {
+    getDownloadURL(mainPicRef)
+      .then(url => {
+        console.log('pic----->', url);
+        setMainPicURL(url);
+      })
+      .catch(error => {
+        switch (error.code) {
+          case 'storage/object-not-found':
+            // File doesn't exist
+            break;
+          case 'storage/unauthorized':
+            // User doesn't have permission to access the object
+            break;
+          case 'storage/canceled':
+            // User canceled the upload
+            break;
+          case 'storage/unknown':
+            // Unknown error occurred, inspect the server response
+            break;
+          case 'storage/quota-exceeded':
+            // Free storage quota exceeded
+            break;
+          case 'storage/unauthenticated':
+            // User is unauthenticated
+            break;
+        }
+      });
+  }
+
   async function getLoc() {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
@@ -59,6 +107,30 @@ export default function CreateQuest({ navigation }) {
       '   Longitude:',
       currentPosition.coords.longitude,
     );
+  }
+  function makeMainQuestStorageLocationString() {
+    return (
+      'questMain' +
+      '_userID_' +
+      context.userID +
+      '_QuestNumber_' +
+      `${questCount}`
+    );
+  }
+  function makeExampleQuestStorageLocationString() {
+    return (
+      'questExample' +
+      '_userID_' +
+      context.userID +
+      '_QuestNumber_' +
+      `${questCount}`
+    );
+  }
+
+  async function setCount() {
+    const q = query(quests, where('creator', '==', context.userID));
+    const querySnapshot = await getDocs(q);
+    setQuestCount(querySnapshot.docs.length);
   }
 
   function changeType(newType: string): void {
@@ -99,15 +171,17 @@ export default function CreateQuest({ navigation }) {
       correct_answer: quizCorrectAnswer,
 
       location: new GeoPoint(latitude, longitude),
+      lat: latitude,
+      lng: longitude,
+      geohash: geohashForLocation([latitude, longitude]),
 
       pic_satisfying_condition: satisfyingCondition,
       example_image_URL: DEFAULT_EXAMPLE_IMAGE,
-      questID: DEFAULT_QUEST_ID,
 
       quality_rating: [0, 0, 0, 0, 0],
       difficulty_rating: [0, 0, 0, 0],
 
-      creator: DEFAULT_USER_NAME,
+      creator: context.userID,
       published: true,
     }).then(() => {
       console.log('Quest Submitted');
@@ -116,8 +190,9 @@ export default function CreateQuest({ navigation }) {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Text>Create Quest</Text>
+      <Button title="Post" onPress={PublishQuest} />
       <Text>Tagline</Text>
       <TextInput
         onChangeText={setTagline}
@@ -133,6 +208,11 @@ export default function CreateQuest({ navigation }) {
       />
 
       <Text>Picture, optional</Text>
+      <UploadImage
+        style={profPicStyles}
+        url={mainPicURL}
+        storageLocation={makeMainQuestStorageLocationString()}
+      />
       <Text>Quest Type</Text>
 
       <Pressable onPress={() => changeType('location')}>
@@ -249,8 +329,7 @@ export default function CreateQuest({ navigation }) {
         </>
       )}
       <Button title="Save" />
-      <Button title="Post" onPress={PublishQuest} />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -258,6 +337,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+});
+
+const profPicStyles = StyleSheet.create({
+  container: {
+    display: 'flex',
+    position: 'absolute',
+    top: '10%',
+    left: '5%',
+  },
+  imageContainer: {
+    height: 150,
+    width: 150,
+    backgroundColor: '#efefef',
+    position: 'relative',
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  image: {
+    flex: 1,
+  },
+  uploadBtnContainer: {
+    position: 'absolute',
+    right: '10%',
+    bottom: 0,
+    borderRadius: 999,
+    borderWidth: 3,
+    borderColor: 'white',
+    backgroundColor: 'cornflowerblue',
+    width: 30,
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
   },
