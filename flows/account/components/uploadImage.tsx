@@ -1,7 +1,8 @@
 import * as ImagePicker from 'expo-image-picker';
+import * as MediaLibrary from 'expo-media-library';
 import { getStorage, ref, uploadBytes } from "firebase/storage";
 import React, { useEffect, useState } from 'react';
-import { Image, ImageStyle, StyleProp, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { Image, ImageStyle, Platform, StyleProp, TouchableOpacity, View, ViewStyle } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 type propTypes = {
@@ -26,27 +27,48 @@ export default function UploadImage({ style, url, storageLocation}: propTypes) {
     let _image = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4,3],
+      aspect: [4, 3],
       quality: 1,
     });
 
     if (!_image.canceled) {
-      // Get and create a reference to Firebase Storage
       const storage = getStorage();
       const photoRef = ref(storage, storageLocation);
 
-      const response = await fetch(_image.assets[0].uri);
-      const blob = await response.blob();
+      try {
+        let localUri = _image.assets[0].uri;
+        if (Platform.OS === 'android') {
+          await MediaLibrary.requestPermissionsAsync();
+          const asset = await MediaLibrary.createAssetAsync(_image.assets[0].uri);
+          localUri = asset.uri;
+        }
 
-      uploadBytes(photoRef, blob)
-        .then((snapshot) => {
-          console.log('Uploaded a blob or file!', snapshot);
-        })
-        .catch((error) => {
-          console.error('Error uploading:', error);
+        // Create a blob directly from the local file URI
+        const blob = await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.onload = function () {
+            resolve(new Blob([xhr.response], { type: 'image/jpeg' }));
+          };
+          xhr.onerror = function () {
+            reject(new TypeError('Failed to create blob from URI'));
+          };
+          xhr.responseType = 'blob';
+          xhr.open('GET', localUri, true);
+          xhr.send();
         });
 
-      setImage(_image.assets[0].uri);
+        uploadBytes(photoRef, blob, { contentType: 'image/jpeg' })
+          .then((snapshot) => {
+            console.log('Uploaded a blob or file!', snapshot);
+          })
+          .catch((error) => {
+            console.error('Error uploading:', error);
+          });
+
+        setImage(localUri);
+      } catch (error) {
+        console.error("File read error:", error);
+      }
     }
   };
 

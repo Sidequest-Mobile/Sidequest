@@ -19,6 +19,14 @@
           "locationWhenInUsePermission": "Allow Sidequest to use your location.",
           "locationAlwaysPermission": "Allow Sidequest to use your location"
         }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Sidequest to access your photos.",
+          "savePhotosPermission": "Allow Sidequest to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
       ]
     ],
     "assetBundlePatterns": ["**/*"],
@@ -29,7 +37,11 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "CAMERA",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
