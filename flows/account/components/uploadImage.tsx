@@ -1,15 +1,8 @@
-import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
-import { getStorage, ref, uploadBytes, uploadString } from 'firebase/storage';
+import * as MediaLibrary from 'expo-media-library';
+import { getStorage, ref, uploadBytes } from "firebase/storage";
 import React, { useEffect, useState } from 'react';
-import {
-  Image,
-  ImageStyle,
-  StyleProp,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from 'react-native';
+import { Image, ImageStyle, Platform, StyleProp, TouchableOpacity, View, ViewStyle } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 type propTypes = {
   style: {
@@ -42,29 +35,45 @@ export default function UploadImage({
     });
 
     if (!_image.canceled) {
-      // Get and create a reference to Firebase Storage
       const storage = getStorage();
       const photoRef = ref(storage, storageLocation);
 
-      // const content = await FileSystem.readAsStringAsync(_image.assets[0].uri, {
-      //   encoding: FileSystem.EncodingType.Base64,
-      // });
-      uploadString(photoRef, content, 'base64').then(snapshot => {
-        console.log('Uploaded a base64 string!');
-      });
+      try {
+        let localUri = _image.assets[0].uri;
+        if (Platform.OS === 'android') {
+          await MediaLibrary.requestPermissionsAsync();
+          const asset = await MediaLibrary.createAssetAsync(_image.assets[0].uri);
+          localUri = asset.uri;
+        }
 
-      const response = await fetch(_image.assets[0].uri);
-      const blob = await response.blob();
-
-      uploadBytes(photoRef, blob)
-        .then(snapshot => {
-          console.log('Uploaded a blob or file!', snapshot);
-        })
-        .catch(error => {
-          console.error('Error uploading:', error);
+        // Create a blob directly from the local file URI
+        const blob = await new Promise<Blob>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.onload = function () {
+            resolve(new Blob([xhr.response], { type: 'image/jpeg' }));
+          };
+          xhr.onerror = function () {
+            reject(new TypeError('Failed to create blob from URI'));
+          };
+          xhr.responseType = 'blob';
+          xhr.open('GET', localUri, true);
+          xhr.send();
         });
 
-      setImage(_image.assets[0].uri);
+        uploadBytes(photoRef, blob, { contentType: 'image/jpeg' })
+          .then((snapshot) => {
+            console.log('Uploaded a blob or file!', snapshot);
+          })
+          .catch((error) => {
+            console.error('Error uploading:', error);
+          });
+
+        setImage(localUri);
+      }
+
+      catch (error) {
+        console.error("Error while processing the image:", error);
+      }
     }
   };
 
