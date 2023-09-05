@@ -4,24 +4,27 @@ import { getStorage, ref, uploadBytes } from "firebase/storage";
 import React, { useEffect, useState } from 'react';
 import { Image, ImageStyle, Platform, StyleProp, TouchableOpacity, View, ViewStyle } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-
 type propTypes = {
   style: {
     container?: StyleProp<ViewStyle>;
     imageContainer?: StyleProp<ViewStyle>;
     image?: StyleProp<ImageStyle>;
     uploadBtnContainer?: StyleProp<ViewStyle>;
-  },
+  };
   url: string;
   storageLocation: string;
 };
 
-export default function UploadImage({ style, url, storageLocation}: propTypes) {
+export default function UploadImage({
+  style,
+  url,
+  storageLocation,
+}: propTypes) {
   const [image, setImage] = useState('');
 
   useEffect(() => {
     setImage(url);
-  }, [url])
+  }, [url]);
 
   const addImage = async () => {
     let _image = await ImagePicker.launchImageLibraryAsync({
@@ -77,12 +80,10 @@ export default function UploadImage({ style, url, storageLocation}: propTypes) {
   return (
     <View style={style.container}>
       <View style={style.imageContainer}>
-        {
-            image  && <Image source={{ uri: image }} style={style.image} />
-        }
+        {image && <Image source={{ uri: image }} style={style.image} />}
       </View>
       <View style={style.uploadBtnContainer}>
-        <TouchableOpacity onPress={addImage} >
+        <TouchableOpacity onPress={addImage}>
           <MaterialCommunityIcons name="plus" size={20} color="white" />
         </TouchableOpacity>
       </View>
