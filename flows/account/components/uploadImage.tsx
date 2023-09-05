@@ -66,8 +66,10 @@ export default function UploadImage({ style, url, storageLocation}: propTypes) {
           });
 
         setImage(localUri);
-      } catch (error) {
-        console.error("File read error:", error);
+      }
+
+      catch (error) {
+        console.error("Error while processing the image:", error);
       }
     }
   };
