@@ -44,7 +44,7 @@ export default function UploadImage({ style, url, storageLocation}: propTypes) {
         }
 
         // Create a blob directly from the local file URI
-        const blob = await new Promise((resolve, reject) => {
+        const blob = await new Promise<Blob>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.onload = function () {
             resolve(new Blob([xhr.response], { type: 'image/jpeg' }));
