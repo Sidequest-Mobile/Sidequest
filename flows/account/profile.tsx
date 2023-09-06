@@ -33,7 +33,6 @@ export default function Profile() {
     useEffect(() => {
       getDownloadURL(profilePicRef)
         .then((url) => {
-          console.log('pic----->', url);
           setProfPicUrl(url);
         })
         .catch((error) => {
