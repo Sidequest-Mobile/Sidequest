@@ -8,7 +8,8 @@ import ValidateQuiz from './consume/validateQuiz';
 import CreateQuest from './create/creationForm';
 import QuestStats from './create/questStats';
 import MeTabs from './meTabs';
-const Stack = createStackNavigator();
+import { CreateQuestStackType } from './types';
+const Stack = createStackNavigator<CreateQuestStackType>();
 function CreateStack() {
   return (
     <Stack.Navigator>

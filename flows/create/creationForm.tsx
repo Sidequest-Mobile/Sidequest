@@ -19,7 +19,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+
 import { appContext } from '../../App';
 import UploadImage from '../account/components/uploadImage';
 import firebase from '../firebase.js';
@@ -28,31 +28,13 @@ let quests = collection(firebase.firestore, '/quests');
 const DEFAULT_QUEST_IMAGE = 'default.jpg';
 const DEFAULT_EXAMPLE_IMAGE = 'defaultExample.jpg';
 
-export default function CreateQuest({ navigation }) {
+
+export default function CreateQuest({ navigation, route }) {
   // General States
   let context = useContext(appContext);
-  const [type, setType] = useState('undecided');
-  const [tagline, setTagline] = useState('');
-  const [description, setDescription] = useState('');
-  let tagsInit: Array<string> = [];
-  const [tags, setTags] = useState(tagsInit);
+  const [form, setForm] = useState();
   const [tagText, setTagText] = useState('');
-  // Quiz States
-  const [quizQuestion, setQuizQuestion] = useState('');
-  const [quizCorrectAnswer, setQuizCorrectAnswer] = useState('');
-  let quiz: Array<string> = [];
   const [quizIncorrectAnswer, setQuizIncorrectAnswer] = useState('');
-  const [quizIncorrectAnswers, setQuizIncorrectAnswers] = useState(quiz);
-  // Media States
-  const [satisfyingCondition, setSatisfyingCondition] = useState('');
-
-  // Location States
-  const [latitude, setLatitude] = useState(0);
-  const [longitude, setLongitude] = useState(0);
-  const [showMap, setShowMap] = useState(false);
-  const [questCount, setQuestCount] = useState(0);
-  const [mainPicURL, setMainPicURL] = useState('');
-  const [exampleURL, setExampleURL] = useState('');
 
   const storage = getStorage();
   const mainPicRef = ref(storage, `QuestDefault.jpg`);
@@ -67,7 +49,7 @@ export default function CreateQuest({ navigation }) {
     getDownloadURL(mainPicRef)
       .then(url => {
         console.log('pic----->', url);
-        setMainPicURL(url);
+        setForm(url);
       })
       .catch(error => {
         switch (error.code) {
@@ -101,12 +83,6 @@ export default function CreateQuest({ navigation }) {
     let currentPosition = await Location.getCurrentPositionAsync({});
     setLatitude(currentPosition.coords.latitude);
     setLongitude(currentPosition.coords.longitude);
-    console.log(
-      'Latitude:',
-      currentPosition.coords.latitude,
-      '   Longitude:',
-      currentPosition.coords.longitude,
-    );
   }
   function makeMainQuestStorageLocationString() {
     return (
@@ -293,25 +269,50 @@ export default function CreateQuest({ navigation }) {
         <>
           <Text>Location</Text>
           <Button title="Current Location" onPress={getLoc} />
-          <Button title="Find on A Map" onPress={() => setShowMap(true)} />
+          <Button
+            title="Find on A Map"
+            onPress={() =>
+              navigation.navigate('CreateMap', {
+                lat: latitude,
+                lng: longitude,
+              })
+            }
+          />
           <MapView
-            style={{ width: '50%', height: '50%' }}
+            style={{ flex: 1 }}
             mapType="satellite"
             initialRegion={{
-              latitude: latitude,
-              longitude: longitude,
+              latitude: mapLatitude,
+              longitude: mapLongitude,
               latitudeDelta: 0.0922,
               longitudeDelta: 0.0421,
             }}>
             <Marker
               draggable={true}
-              coordinate={{ latitude: latitude, longitude: longitude }}
+              coordinate={{ latitude: mapLatitude, longitude: mapLongitude }}
               onDragEnd={e => {
-                setLatitude(e.nativeEvent.coordinate.latitude);
-                setLongitude(e.nativeEvent.coordinate.longitude);
+                setMapLatitude(e.nativeEvent.coordinate.latitude);
+                setMapLongitude(e.nativeEvent.coordinate.longitude);
                 console.log('End location', e.nativeEvent.coordinate);
               }}
             />
+            <Callout
+              style={{
+                flex: 1,
+                alignSelf: 'flex-end',
+                justifyContent: 'space-between',
+                backgroundColor: 'transparent',
+                borderWidth: 0.5,
+                borderRadius: 20,
+              }}
+              onPress={() =>
+                navigation.navigate('Create', {
+                  lat: mapLatitude,
+                  lng: mapLongitude,
+                })
+              }>
+              <Text>Select</Text>
+            </Callout>
           </MapView>
         </>
       )}
@@ -343,9 +344,6 @@ const styles = StyleSheet.create({
 const profPicStyles = StyleSheet.create({
   container: {
     display: 'flex',
-    position: 'absolute',
-    top: '10%',
-    left: '5%',
   },
   imageContainer: {
     height: 150,
@@ -359,9 +357,6 @@ const profPicStyles = StyleSheet.create({
     flex: 1,
   },
   uploadBtnContainer: {
-    position: 'absolute',
-    right: '10%',
-    bottom: 0,
     borderRadius: 999,
     borderWidth: 3,
     borderColor: 'white',
