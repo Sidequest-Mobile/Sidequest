@@ -1,5 +1,15 @@
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import React, { useContext, useState } from 'react';
+import * as Location from 'expo-location';
+import {
+  GeoPoint,
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore';
+import { getDownloadURL, getStorage, ref } from 'firebase/storage';
+import { geohashForLocation } from 'geofire-common';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   Button,
   Pressable,
@@ -9,40 +19,59 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+
 import { appContext } from '../../App';
 import UploadImage from '../account/components/uploadImage';
 import firebase from '../firebase.js';
-import { CreationFormType, questForm } from '../types';
+
 let quests = collection(firebase.firestore, '/quests');
-type locationOptions = 'current' | 'map' | 'no selection';
-import * as Location from 'expo-location';
+const DEFAULT_QUEST_IMAGE = 'default.jpg';
+const DEFAULT_EXAMPLE_IMAGE = 'defaultExample.jpg';
 
-export default function cQuest({ navigation, route }: CreationFormType) {
+export default function CQuest({ navigation, route }) {
+  // General States
   let context = useContext(appContext);
-  const [form, setForm] = useState<questForm>({
-    type: 'undecided',
-    tagline: '',
-    description: '',
-    tags: [] as Array<string>,
-    quest_image_URL: 'default.jpg',
-    example_image_URL: 'defaultExample.jpg',
-    creator: context.userID,
-    difficulty_rating: [0, 0, 0, 0, 0],
-    quality_rating: [0, 0, 0, 0, 0],
-    published: false,
-    creator_number: undefined,
-  });
-
+  const [form, setForm] = useState();
   const [tagText, setTagText] = useState('');
   const [quizIncorrectAnswer, setQuizIncorrectAnswer] = useState('');
-  const [locationOption, setLocationOption] =
-    useState<locationOptions>('no selection');
 
-  async function initialize(): Promise<void> {
-    const q = query(quests, where('creator', '==', context.userID));
-    const querySnapshot = await getDocs(q);
-    setForm({ ...form, creator_number: querySnapshot.docs.length + 1 });
+  const storage = getStorage();
+  const mainPicRef = ref(storage, `QuestDefault.jpg`);
+
+  useEffect(() => {
+    getLoc();
+    setCount();
+    getQuestDefault();
+  }, []);
+
+  async function getQuestDefault() {
+    getDownloadURL(mainPicRef)
+      .then(url => {
+        console.log('pic----->', url);
+        setForm(url);
+      })
+      .catch(error => {
+        switch (error.code) {
+          case 'storage/object-not-found':
+            // File doesn't exist
+            break;
+          case 'storage/unauthorized':
+            // User doesn't have permission to access the object
+            break;
+          case 'storage/canceled':
+            // User canceled the upload
+            break;
+          case 'storage/unknown':
+            // Unknown error occurred, inspect the server response
+            break;
+          case 'storage/quota-exceeded':
+            // Free storage quota exceeded
+            break;
+          case 'storage/unauthenticated':
+            // User is unauthenticated
+            break;
+        }
+      });
   }
 
   async function getLoc() {
@@ -51,229 +80,289 @@ export default function cQuest({ navigation, route }: CreationFormType) {
       return;
     }
     let currentPosition = await Location.getCurrentPositionAsync({});
-    setForm({
-      ...form,
-      lat: currentPosition.coords.latitude,
-      lng: currentPosition.coords.longitude,
+    setLatitude(currentPosition.coords.latitude);
+    setLongitude(currentPosition.coords.longitude);
+  }
+  function makeMainQuestStorageLocationString() {
+    return (
+      'questMain' +
+      '_userID_' +
+      context.userID +
+      '_QuestNumber_' +
+      `${questCount}`
+    );
+  }
+  function makeExampleQuestStorageLocationString() {
+    return (
+      'questExample' +
+      '_userID_' +
+      context.userID +
+      '_QuestNumber_' +
+      `${questCount}`
+    );
+  }
+
+  async function setCount() {
+    const q = query(quests, where('creator', '==', context.userID));
+    const querySnapshot = await getDocs(q);
+    setQuestCount(querySnapshot.docs.length);
+  }
+
+  function changeType(newType: string): void {
+    setType(newType);
+    setQuizQuestion('');
+    setQuizCorrectAnswer('');
+    setQuizIncorrectAnswer('');
+    setQuizIncorrectAnswers(quiz);
+    setSatisfyingCondition('');
+    setExampleURL('');
+  }
+
+  let addTag = function (): void {
+    setTags([...tags, tagText]);
+    setTagText('');
+  };
+
+  let addAnswer = function (): void {
+    setQuizIncorrectAnswers([...quizIncorrectAnswers, quizIncorrectAnswer]);
+    setQuizIncorrectAnswer('');
+  };
+
+  function saveQuest(): void {
+    // Datatype Validation
+  }
+
+  function PublishQuest(): void {
+    // Data Validation
+    addDoc(quests, {
+      type,
+      tagline,
+      description,
+      tags,
+      quest_image_URL: DEFAULT_QUEST_IMAGE,
+
+      quiz_question: quizQuestion,
+      incorrect_answers: quizIncorrectAnswers,
+      correct_answer: quizCorrectAnswer,
+
+      location: new GeoPoint(latitude, longitude),
+      lat: latitude,
+      lng: longitude,
+      geohash: geohashForLocation([latitude, longitude]),
+
+      pic_satisfying_condition: satisfyingCondition,
+      example_image_URL: DEFAULT_EXAMPLE_IMAGE,
+
+      quality_rating: [0, 0, 0, 0, 0],
+      difficulty_rating: [0, 0, 0, 0],
+
+      creator: context.userID,
+      published: true,
+    }).then(() => {
+      console.log('Quest Submitted');
+      navigation.pop();
     });
   }
 
   return (
-    <ScrollView style={styles.scroll}>
-      {/** Basic Shared Info  */}
-      <View style={styles.basicInfo}>
-        <Text style={styles.formLabel}>Tagline</Text>
-        <TextInput
-          style={styles.textInputShort}
-          placeholder="This Quest in one sentence"
-        />
-        <Text style={styles.formLabel}>Description</Text>
-        <TextInput
-          style={styles.textInputLong}
-          placeholder="Type a description of your quest here"
-        />
-        <Text style={styles.formLabel}>Quest Type</Text>
-        <View style={styles.typeButtonsContainer}>
-          <Pressable>
-            <View
-              style={
-                form.type === 'location'
-                  ? styles.typeViewPressed
-                  : styles.typeViewUnpressed
-              }>
-              <Text
-                style={
-                  form.type === 'location'
-                    ? styles.typeTextPressed
-                    : styles.typeTextUnpressed
-                }>
-                Location
-              </Text>
-            </View>
-          </Pressable>
-          <Pressable>
-            <View
-              style={
-                form.type === 'media'
-                  ? styles.typeViewPressed
-                  : styles.typeViewUnpressed
-              }>
-              <Text
-                style={
-                  form.type === 'media'
-                    ? styles.typeTextPressed
-                    : styles.typeTextUnpressed
-                }>
-                Media
-              </Text>
-            </View>
-          </Pressable>
-          <Pressable>
-            <View
-              style={
-                form.type === 'quiz'
-                  ? styles.typeViewPressed
-                  : styles.typeViewUnpressed
-              }>
-              <Text
-                style={
-                  form.type === 'quiz'
-                    ? styles.typeTextPressed
-                    : styles.typeTextUnpressed
-                }>
-                Quiz
-              </Text>
-            </View>
-          </Pressable>
+    <ScrollView style={styles.container}>
+      <Text>Create Quest</Text>
+      <Button title="Post" onPress={PublishQuest} />
+      <Text>Tagline</Text>
+      <TextInput
+        onChangeText={setTagline}
+        value={tagline}
+        placeholder="This Quest in one sentence"
+      />
+
+      <Text>Description</Text>
+      <TextInput
+        onChangeText={setDescription}
+        value={description}
+        placeholder="Type a description of your quest here"
+      />
+
+      <Text>Picture, optional</Text>
+      <UploadImage
+        style={profPicStyles}
+        url={mainPicURL}
+        storageLocation={makeMainQuestStorageLocationString()}
+      />
+      <Text>Quest Type</Text>
+
+      <Pressable onPress={() => changeType('location')}>
+        <View
+          style={{
+            backgroundColor: 'blue',
+            borderRadius: 10,
+            height: 20,
+          }}>
+          <Text>Location</Text>
         </View>
-        <Text style={styles.formLabel}>Picture, optional</Text>
-        <UploadImage style={uploadImageStyles} />
-      </View>
-      {/** Quiz  */}
-      {form.type === 'quiz' && (
-        <View style={styles.quizView}>
-          <Text style={styles.formLabel}>Quiz Question</Text>
+      </Pressable>
+
+      <Pressable onPress={() => changeType('media')}>
+        <View
+          style={{
+            backgroundColor: 'yellow',
+            borderRadius: 10,
+            height: 20,
+          }}>
+          <Text> Media </Text>
+        </View>
+      </Pressable>
+
+      <Pressable onPress={() => changeType('quiz')}>
+        <View
+          style={{
+            backgroundColor: 'red',
+            borderRadius: 10,
+            height: 20,
+          }}>
+          <Text> Quiz </Text>
+        </View>
+      </Pressable>
+
+      <Text>Tags</Text>
+      {tags.map(
+        (val): JSX.Element => (
+          <Text>{val}</Text>
+        ),
+      )}
+      <TextInput
+        onChangeText={setTagText}
+        value={tagText}
+        placeholder="Write a tag for your quest to be identified by"
+      />
+      <Button title="Add Tag" onPress={addTag} />
+      {}
+      {type === 'quiz' && (
+        <>
+          <Text>Quiz Question </Text>
           <TextInput
-            style={styles.textInputLong}
+            onChangeText={setQuizQuestion}
+            value={quizQuestion}
             placeholder="What question will the quester answer?"
           />
-          <Text style={styles.formLabel}>The Correct Answer</Text>
+          <Text>The Correct Answer</Text>
           <TextInput
-            style={styles.textInputShort}
+            onChangeText={setQuizCorrectAnswer}
+            value={quizCorrectAnswer}
             placeholder="What is the correct answer to the quiz?"
           />
-          <Text style={styles.formLabel}>Other Answers</Text>
+          <Text>Other Answers</Text>
           <TextInput
-            style={styles.textInputShort}
+            onChangeText={setQuizIncorrectAnswer}
+            value={quizIncorrectAnswer}
             placeholder="Add an incorrect Answer"
           />
-          <Button title="Add Answer" />
-          <View style={styles.answersContainer}>
-            {form.incorrect_answers.map(
-              (val): JSX.Element => (
-                <View style={styles.incorrectAnswerContainer}>
-                  <Text style={styles.incorrectAnswerText}>{val}</Text>
-                </View>
-              ),
-            )}
-          </View>
-        </View>
+          <Button title="Add Answer" onPress={addAnswer} />
+        </>
       )}
-      {/** Location  */}
-      {form.type === 'location' && (
-        <View style={styles.locationView}>
-          <Text style={styles.formLabel}> Location</Text>
-          <View style={styles.locationOptionsContainer}>
-            <Pressable>
-              <View
-                style={
-                  locationOption === 'current'
-                    ? styles.locationsViewPressed
-                    : styles.locationsViewUnpressed
-                }>
-                <Text
-                  style={
-                    locationOption === 'current'
-                      ? styles.locationsTextPressed
-                      : styles.locationsTextUnpressed
-                  }>
-                  {' '}
-                  Use Current Location
-                </Text>
-              </View>
-            </Pressable>
-
-            <Pressable>
-              <View
-                style={
-                  locationOption === 'map'
-                    ? styles.locationsViewPressed
-                    : styles.locationsViewUnpressed
-                }>
-                <Text
-                  style={
-                    locationOption === 'map'
-                      ? styles.locationsTextPressed
-                      : styles.locationsTextUnpressed
-                  }>
-                  {' '}
-                  Find on a Map
-                </Text>
-              </View>
-            </Pressable>
-          </View>
-
-          {locationOption === 'map' && (
-            <View style={styles.mapContainer}>
-              <MapView style={styles.mapView}>
-                <Marker />
-              </MapView>
-            </View>
-          )}
-        </View>
+      {quizIncorrectAnswers.map(
+        (val): JSX.Element => (
+          <Text>{val}</Text>
+        ),
       )}
-      {/** Media  */}
-      {form.type === 'media' && (
-        <View style={styles.mediaView}>
-          <Text style={styles.formLabel}>Satisfying Condition</Text>
-          <TextInput
-            style={styles.textInputLong}
-            placeholder="How can one tell if the quest has been completed?"
+      {type === 'location' && (
+        <>
+          <Text>Location</Text>
+          <Button title="Current Location" onPress={getLoc} />
+          <Button
+            title="Find on A Map"
+            onPress={() =>
+              navigation.navigate('CreateMap', {
+                lat: latitude,
+                lng: longitude,
+              })
+            }
           />
-          <Text style={styles.formLabel}>Upload an Example</Text>
-          <UploadImage />
-        </View>
+          <MapView
+            style={{ flex: 1 }}
+            mapType="satellite"
+            initialRegion={{
+              latitude: mapLatitude,
+              longitude: mapLongitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            }}>
+            <Marker
+              draggable={true}
+              coordinate={{ latitude: mapLatitude, longitude: mapLongitude }}
+              onDragEnd={e => {
+                setMapLatitude(e.nativeEvent.coordinate.latitude);
+                setMapLongitude(e.nativeEvent.coordinate.longitude);
+                console.log('End location', e.nativeEvent.coordinate);
+              }}
+            />
+            <Callout
+              style={{
+                flex: 1,
+                alignSelf: 'flex-end',
+                justifyContent: 'space-between',
+                backgroundColor: 'transparent',
+                borderWidth: 0.5,
+                borderRadius: 20,
+              }}
+              onPress={() =>
+                navigation.navigate('Create', {
+                  lat: mapLatitude,
+                  lng: mapLongitude,
+                })
+              }>
+              <Text>Select</Text>
+            </Callout>
+          </MapView>
+        </>
       )}
-      {/** Util Buttons  */}
-      <View style={styles.utilButtonContainer}>
-        <Pressable>
-          <View style={styles.utilButtonView}>
-            <Text style={styles.utilButtonText}> Save Changes</Text>
-          </View>
-        </Pressable>
 
-        <Pressable>
-          <View style={styles.utilButtonView}>
-            <Text style={styles.utilButtonText}> Publish </Text>
-          </View>
-        </Pressable>
-      </View>
+      {type === 'media' && (
+        <>
+          <Text>Satisfying Condition</Text>
+          <TextInput
+            placeholder="How can one tell if the quest has been completed?"
+            value={satisfyingCondition}
+            onChangeText={setSatisfyingCondition}
+          />
+
+          <Text>Example Media</Text>
+        </>
+      )}
+      <Button title="Save" />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {},
-  basicInfo: {},
-  quizView: {},
-  locationView: {},
-  mediaView: {},
-  utilButtonContainer: {},
-  formLabel: {},
-  textInputShort: {},
-  textInputLong: {},
-  typeViewUnpressed: {},
-  typeViewPressed: {},
-  typeTextUnpressed: {},
-  typeTextPressed: {},
-  typeButtonsContainer: {},
-  incorrectAnswerContainer: {},
-  incorrectAnswerText: {},
-  answersContainer: {},
-  locationOptionsContainer: {},
-  locationsViewPressed: {},
-  locationsViewUnpressed: {},
-  locationsTextPressed: {},
-  locationsTextUnpressed: {},
-  mapContainer: {},
-  mapView: {},
-  utilButtonView: {},
-  utilButtonText: {},
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
 });
 
-const uploadImageStyles = StyleSheet.create({
-  container: {},
-  imageContainer: {},
-  image: {},
-  uploadBtnContainer: {},
+const profPicStyles = StyleSheet.create({
+  container: {
+    display: 'flex',
+  },
+  imageContainer: {
+    height: 150,
+    width: 150,
+    backgroundColor: '#efefef',
+    position: 'relative',
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  image: {
+    flex: 1,
+  },
+  uploadBtnContainer: {
+    borderRadius: 999,
+    borderWidth: 3,
+    borderColor: 'white',
+    backgroundColor: 'cornflowerblue',
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

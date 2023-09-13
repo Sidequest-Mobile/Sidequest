@@ -1,5 +1,5 @@
-import { GeoPoint } from 'firebase/firestore';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { GeoPoint } from 'firebase/firestore';
 
 export type CreateQuestStackType = {
   Me: undefined;
@@ -54,10 +54,10 @@ export type questForm = {
   quality_rating: [0, 0, 0, 0, 0];
   quiz_question?: string;
   correct_answer?: string;
-  quest_image_URL: string;
-  example_image_URL: string;
+  quest_image_location: string;
+  example_image_location: string;
   geohash?: string;
-  incorrect_answers?: Array<string>;
+  incorrect_answers: Array<string>;
   pic_satisfying_condition?: string;
   lat?: number;
   lng?: number;
