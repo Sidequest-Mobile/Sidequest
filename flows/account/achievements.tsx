@@ -1,6 +1,6 @@
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import React, { useContext, useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { View } from 'react-native';
 import { appContext } from '../../App';
 import firebase from '../firebase';
 import Achievement from './achievement';
@@ -14,17 +14,13 @@ type AchievementType = {
   qualifyingQuestIds: string[];
 };
 
-type Context = {
-  userID: string;
-};
-
 function Achievements() {
   const [achievements, setAchievements] = useState<AchievementType[]>([]);
   const userContext = useContext(appContext);
 
   useEffect(() => {
     fetchAndSetAchievements();
-    console.log(userContext.userID);
+    fetchUserCompletedQuests();
   }, []);
 
   // update this to fetch only completed achievements from user document
@@ -35,10 +31,20 @@ function Achievements() {
   };
 
   const fetchUserCompletedQuests = async (): Promise<string[]> => {
-    const userCompetedQuests: string[] = [];
-    const completedQuestsSnapshot = await getDocs(
-      collection(firebase.firestore, 'user'), // where uid === userId
+    let userCompetedQuests: string[] = [];
+
+    const q = query(
+      collection(firebase.firestore, 'user'),
+      where('UID', '==', userContext.userID),
     );
+
+    const completedQuestsSnapshot = await getDocs(q);
+    completedQuestsSnapshot.forEach(doc => {
+      let user = doc.data();
+      userCompetedQuests = user.completedQuests;
+    });
+
+    console.log('user completed quests: ', userCompetedQuests);
     return userCompetedQuests;
   };
 
@@ -93,10 +99,6 @@ function Achievements() {
 
   return (
     <View>
-      <Pressable>
-        <Text>Go back to "Me"</Text>
-      </Pressable>
-      <Text>Map of Achievement Objects</Text>
       {achievements.map(achievement => (
         <Achievement key={achievement.id} {...achievement} />
       ))}
