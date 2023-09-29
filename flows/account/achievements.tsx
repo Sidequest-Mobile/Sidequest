@@ -32,18 +32,17 @@ function Achievements() {
 
   const fetchUserCompletedQuests = async (): Promise<string[]> => {
     let userCompetedQuests: string[] = [];
-
-    const q = query(
-      collection(firebase.firestore, 'user'),
-      where('UID', '==', userContext.userID),
-    );
-
-    const completedQuestsSnapshot = await getDocs(q);
-    completedQuestsSnapshot.forEach(doc => {
-      let user = doc.data();
-      userCompetedQuests = user.completedQuests;
-    });
-
+    if (userContext) {
+      const q = query(
+        collection(firebase.firestore, 'user'),
+        where('UID', '==', userContext.userID), // need to add type to context in App.tsx
+      );
+      const completedQuestsSnapshot = await getDocs(q);
+      completedQuestsSnapshot.forEach(doc => {
+        let user = doc.data();
+        userCompetedQuests = user.completedQuests;
+      });
+    }
     console.log('user completed quests: ', userCompetedQuests);
     return userCompetedQuests;
   };
