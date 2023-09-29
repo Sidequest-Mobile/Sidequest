@@ -10,7 +10,6 @@ export default function Profile() {
     const [bio, setBio] = useState('');
     const [showEdit, setShowEdit] = useState(false);
 
-
     // Get and create a reference to Firebase Storage
     const storage = getStorage();
     const profilePicRef = ref(storage, `profile.jpg`);
@@ -28,7 +27,6 @@ export default function Profile() {
     const openCloseEdits = (toggle: boolean):void => {
       setShowEdit(toggle);
     }
-
 
     useEffect(() => {
       getDownloadURL(profilePicRef)
