@@ -1,6 +1,7 @@
 import { Entypo, Feather } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, Keyboard, StyleSheet, TextInput, View } from 'react-native';
+import SearchTypeDropdown from './searchtype';
 
 const styles = StyleSheet.create({
   container: {
@@ -41,15 +42,14 @@ type SearchProps = {
   setClicked: boolean;
 };
 
-const SearchBar = ({
-  clicked,
-  searchPhrase,
-  setSearchPhrase,
-  setClicked,
-  navigation,
-}: SearchProps) => {
+const SearchBar = ({ clicked, searchPhrase, setSearchPhrase, setClicked, navigation }: SearchProps) => {
+
+  const [selected, setSelected] = useState<string>('all');
+
+
   return (
     <View style={styles.container}>
+      <SearchTypeDropdown />
       <Button
         title="Placeholder for Quest"
         onPress={e => navigation.navigate('Quest')}></Button>

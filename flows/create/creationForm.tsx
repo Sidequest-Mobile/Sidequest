@@ -1,24 +1,9 @@
 import * as Location from 'expo-location';
-import {
-  GeoPoint,
-  addDoc,
-  collection,
-  getDocs,
-  query,
-  where,
-} from 'firebase/firestore';
+import { GeoPoint, addDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { getDownloadURL, getStorage, ref } from 'firebase/storage';
 import { geohashForLocation } from 'geofire-common';
 import React, { useContext, useEffect, useState } from 'react';
-import {
-  Button,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Button, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { appContext } from '../../App';
 import UploadImage from '../account/components/uploadImage';
