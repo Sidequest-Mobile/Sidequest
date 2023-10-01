@@ -10,6 +10,7 @@ export type CreateQuestStackType = {
   'Validate Quiz': undefined;
   'Validate Location': undefined;
   Rate: undefined;
+  'Choose Location': undefined;
 };
 
 export type ConsumeQuestStackType = {

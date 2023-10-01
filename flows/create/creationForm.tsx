@@ -1,5 +1,6 @@
+import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { getDownloadURL, getStorage, ref } from 'firebase/storage';
 import React, { useContext, useEffect, useState } from 'react';
 import {
@@ -11,9 +12,9 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
 import { appContext } from '../../App';
 import UploadImage from '../account/components/uploadImage';
+import { creationContext } from '../createQuestStack';
 import firebase from '../firebase.js';
 import { CreationFormType, questForm } from '../types';
 let quests = collection(firebase.firestore, '/quests');
@@ -21,7 +22,7 @@ type locationOptions = 'current' | 'map' | 'no selection';
 
 export default function CreateQuest({ navigation, route }: CreationFormType) {
   let context = useContext(appContext);
-
+  let locationContext = useContext(creationContext);
   const [form, setForm] = useState<questForm>({
     type: 'undecided',
     tagline: '',
@@ -47,8 +48,19 @@ export default function CreateQuest({ navigation, route }: CreationFormType) {
 
   useEffect(() => {
     initialize();
+    getLoc();
   }, []);
 
+  useFocusEffect(() => {
+    if (form.lat !== locationContext.lat && form.lng !== locationContext.lng) {
+      setForm({ ...form, lat: locationContext.lat, lng: locationContext.lng });
+      console.log(
+        'Our new values on focus are..',
+        locationContext.lat,
+        locationContext.lng,
+      );
+    }
+  });
   async function initialize(): Promise<void> {
     const questImage = ref(storage, form.quest_image_location);
     const exampleQuestImage = ref(storage, form.example_image_location);
@@ -99,6 +111,9 @@ export default function CreateQuest({ navigation, route }: CreationFormType) {
       lat: currentPosition.coords.latitude,
       lng: currentPosition.coords.longitude,
     });
+    locationContext.changeLat(currentPosition.coords.latitude);
+    locationContext.changeLng(currentPosition.coords.longitude);
+    console.log('form from loc', form);
   }
 
   function changeText(
@@ -114,7 +129,18 @@ export default function CreateQuest({ navigation, route }: CreationFormType) {
     obj[property] = text;
     setForm(obj);
   }
-
+  function addTag() {
+    let tags = [...form.tags];
+    tags.push(tagText);
+    setForm({ ...form, tags });
+    setTagText('');
+  }
+  function addIncorrectAnswer() {
+    let incorrect_answers = [...form.incorrect_answers];
+    incorrect_answers.push(quizIncorrectAnswer);
+    setForm({ ...form, incorrect_answers });
+    setQuizIncorrectAnswer('');
+  }
   function selectType(typ: 'media' | 'location' | 'quiz') {
     if (form.type !== typ) {
       let obj = {
@@ -134,6 +160,19 @@ export default function CreateQuest({ navigation, route }: CreationFormType) {
       setForm(obj);
     }
   }
+  function navigateToMap() {
+    setLocationOption('map');
+    navigation.navigate('Choose Location');
+  }
+  function PublishQuest(): void {
+    // Data Validation
+    addDoc(quests, { ...form, creator: context.userID, published: true }).then(
+      () => {
+        console.log('Quest Submitted');
+        navigation.pop();
+      },
+    );
+  }
 
   return (
     <ScrollView style={styles.scroll}>
@@ -151,6 +190,21 @@ export default function CreateQuest({ navigation, route }: CreationFormType) {
           placeholder="Type a description of your quest here"
           onChangeText={text => changeText(text, 'description')}
         />
+        <Text style={styles.formLabel}>Tagline</Text>
+        <TextInput
+          style={styles.textInputShort}
+          placeholder="Tags You'd like to add"
+          onChangeText={text => setTagText(text)}
+          value={tagText}
+        />
+        <Pressable onPress={addTag}>
+          <View style={styles.typeButtonsContainer}>
+            <Text style={styles.typeTextPressed}>Add Tag</Text>
+          </View>
+        </Pressable>
+        {form.tags.map(tag => {
+          return <Text>{tag}</Text>;
+        })}
         <Text style={styles.formLabel}>Quest Type</Text>
         <View style={styles.typeButtonsContainer}>
           <Pressable onPress={() => selectType('location')}>
@@ -233,8 +287,10 @@ export default function CreateQuest({ navigation, route }: CreationFormType) {
           <TextInput
             style={styles.textInputShort}
             placeholder="Add an incorrect Answer"
+            onChangeText={text => setQuizIncorrectAnswer(text)}
+            value={quizIncorrectAnswer}
           />
-          <Button title="Add Answer" />
+          <Button title="Add Answer" onPress={addIncorrectAnswer} />
           <View style={styles.answersContainer}>
             {form.incorrect_answers.map(
               (val): JSX.Element => (
@@ -251,7 +307,10 @@ export default function CreateQuest({ navigation, route }: CreationFormType) {
         <View style={styles.locationView}>
           <Text style={styles.formLabel}> Location</Text>
           <View style={styles.locationOptionsContainer}>
-            <Pressable>
+            <Pressable
+              onPress={() => {
+                setLocationOption('current');
+              }}>
               <View
                 style={
                   locationOption === 'current'
@@ -270,7 +329,7 @@ export default function CreateQuest({ navigation, route }: CreationFormType) {
               </View>
             </Pressable>
 
-            <Pressable>
+            <Pressable onPress={navigateToMap}>
               <View
                 style={
                   locationOption === 'map'
@@ -289,14 +348,6 @@ export default function CreateQuest({ navigation, route }: CreationFormType) {
               </View>
             </Pressable>
           </View>
-
-          {locationOption === 'map' && (
-            <View style={styles.mapContainer}>
-              <MapView style={styles.mapView}>
-                <Marker />
-              </MapView>
-            </View>
-          )}
         </View>
       )}
       {/** Media  */}
@@ -326,7 +377,7 @@ export default function CreateQuest({ navigation, route }: CreationFormType) {
           </View>
         </Pressable>
 
-        <Pressable>
+        <Pressable onPress={PublishQuest}>
           <View style={styles.utilButtonView}>
             <Text style={styles.utilButtonText}> Publish </Text>
           </View>
@@ -357,7 +408,7 @@ const styles = StyleSheet.create({
   locationOptionsContainer: {},
   locationsViewPressed: {},
   locationsViewUnpressed: {},
-  locationsTextPressed: {},
+  locationsTextPressed: { fontWeight: 'bold' },
   locationsTextUnpressed: {},
   mapContainer: {},
   mapView: {},
