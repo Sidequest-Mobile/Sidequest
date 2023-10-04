@@ -16,6 +16,7 @@ type AchievementType = {
 
 function Achievements() {
   const [achievements, setAchievements] = useState<AchievementType[]>([]);
+  const [userAchievements, setUserAchievements] = useState<string[]>([]);
   const userContext = useContext(appContext);
 
   useEffect(() => {
@@ -26,8 +27,10 @@ function Achievements() {
   // update this to fetch only completed achievements from user document
   const fetchAndSetAchievements = async () => {
     // need to update this to fetch only the user achievements
-    const userAchievements = await fetchAllAchievements();
-    setAchievements(userAchievements);
+    const allAchievements = await fetchAllAchievements();
+    setAchievements(allAchievements);
+    const userSpecificAchievements = await fetchUserAchievements();
+    setUserAchievements(userSpecificAchievements);
   };
 
   const fetchUserCompletedQuests = async (): Promise<string[]> => {
@@ -43,8 +46,23 @@ function Achievements() {
         userCompetedQuests = user.completedQuests;
       });
     }
-    console.log('user completed quests: ', userCompetedQuests);
     return userCompetedQuests;
+  };
+
+  const fetchUserAchievements = async (): Promise<string[]> => {
+    let userAchievements: string[] = [];
+    if (userContext) {
+      const q = query(
+        collection(firebase.firestore, 'user'),
+        where('UID', '==', userContext.userID), // need to add type to context in App.tsx
+      );
+      const userAchievementsSnapshot = await getDocs(q);
+      userAchievementsSnapshot.forEach(doc => {
+        let user = doc.data();
+        userAchievements = user.achievements;
+      });
+    }
+    return userAchievements;
   };
 
   const fetchAllAchievements = async (): Promise<AchievementType[]> => {
@@ -98,9 +116,11 @@ function Achievements() {
 
   return (
     <View>
-      {achievements.map(achievement => (
-        <Achievement key={achievement.id} {...achievement} />
-      ))}
+      {achievements.map(achievement => {
+        if (userAchievements.includes(achievement.id)) {
+          return <Achievement key={achievement.id} {...achievement} />;
+        }
+      })}
     </View>
   );
 }
