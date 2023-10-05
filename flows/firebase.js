@@ -7,4 +7,5 @@ import app from '../firebaseConfig.js';
 const firestore = getFirestore(app);
 const storage = getStorage(app);
 const auth = getAuth(app);
-export default { app, firestore, storage, ref, uploadBytes, auth };
+export default { app, auth, firestore, ref, storage, uploadBytes };
+
