@@ -6,8 +6,8 @@ import ValidateLocation from './consume/validateLocation';
 import ValidateMedia from './consume/validateMedia';
 import ValidateQuiz from './consume/validateQuiz';
 import SearchTabs from './searchTabs';
-
-const Stack = createStackNavigator();
+import { ConsumeQuestStackType } from './types';
+const Stack = createStackNavigator<ConsumeQuestStackType>();
 function QuestStack() {
   return (
     <Stack.Navigator>

@@ -2,7 +2,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
 import Login from './account/login';
 import Signup from './account/signup';
-const Stack = createStackNavigator();
+import { AuthStackType } from './types';
+const Stack = createStackNavigator<AuthStackType>();
 function AuthStack({}) {
   return (
     <Stack.Navigator>

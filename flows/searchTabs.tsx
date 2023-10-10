@@ -2,8 +2,8 @@ import { createMaterialTopTabNavigator } from '@react-navigation/material-top-ta
 import React from 'react';
 import Map from './consume/map';
 import SearchBar from './consume/search';
-
-const Tab = createMaterialTopTabNavigator();
+import { SearchTabsType } from './types';
+const Tab = createMaterialTopTabNavigator<SearchTabsType>();
 function SearchTabs() {
   return (
     <Tab.Navigator>

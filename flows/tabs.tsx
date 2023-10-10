@@ -4,7 +4,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import CommunityStack from './communityStack';
 import QuestStack from './consumeQuestStack';
 import CreateStack from './createQuestStack';
-const Tab = createMaterialBottomTabNavigator();
+import { TabsType } from './types';
+const Tab = createMaterialBottomTabNavigator<TabsType>();
 
 export default function Tabs() {
   return (

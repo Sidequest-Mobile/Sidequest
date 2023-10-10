@@ -61,7 +61,11 @@ function Quest({ navigation, route }) {
         <>
           <Button
             title="Go to Quiz complete"
-            onPress={e => navigation.navigate('Validate Quiz')}></Button>
+            onPress={e =>
+              navigation.navigate('Validate Quiz', {
+                id: quest.questID,
+              })
+            }></Button>
         </>
       )}
       <Pressable onPress={e => navigation.pop()}>

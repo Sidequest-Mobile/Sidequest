@@ -4,8 +4,8 @@ import Achievements from './account/achievements';
 import Profile from './account/profile';
 import MyJoinedQuests from './consume/myJoinedQuests';
 import MyCreatedQuests from './create/myCreatedQuests';
-
-const Tab = createMaterialTopTabNavigator();
+import { MeTabsType } from './types';
+const Tab = createMaterialTopTabNavigator<MeTabsType>();
 function MeTabs() {
   return (
     <Tab.Navigator>

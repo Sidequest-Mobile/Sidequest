@@ -3,7 +3,13 @@ import React, { createContext, useState } from 'react';
 import AuthStack from './flows/authStack';
 import Tabs from './flows/tabs';
 
-export const appContext = createContext({});
+export type appContextType = {
+  authSuccess: (val: boolean) => void;
+  userID: string;
+  changeUserID: (x: string) => void;
+};
+
+export const appContext = createContext<appContextType>({} as appContextType);
 
 export default function App() {
   const [signedIn, setSignIn] = useState(false);
