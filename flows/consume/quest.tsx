@@ -97,7 +97,7 @@ function Quest({ navigation, route }) {
             title="Go to Location complete"
             onPress={e =>
               navigation.navigate('Validate Location', {
-                id: quest.questID,
+                id: route.params.id,
               })
             }></Button>
         </>
@@ -108,7 +108,7 @@ function Quest({ navigation, route }) {
             title="Go to Media complete"
             onPress={e =>
               navigation.navigate('Validate Media', {
-                id: quest.questID,
+                id: route.params.id,
               })
             }></Button>
         </>
@@ -119,7 +119,7 @@ function Quest({ navigation, route }) {
             title="Go to Quiz complete"
             onPress={e =>
               navigation.navigate('Validate Quiz', {
-                id: quest.questID,
+                id: route.params.id,
               })
             }></Button>
         </>
