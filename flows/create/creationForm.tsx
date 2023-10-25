@@ -1,7 +1,15 @@
 import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
-import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import {
+  GeoPoint,
+  addDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+} from 'firebase/firestore';
 import { getDownloadURL, getStorage, ref } from 'firebase/storage';
+import { geohashForLocation } from 'geofire-common';
 import React, { useContext, useEffect, useState } from 'react';
 import {
   Button,
@@ -35,7 +43,7 @@ export default function CreateQuest({ navigation, route }: CreationFormType) {
     difficulty_rating: [0, 0, 0, 0, 0],
     quality_rating: [0, 0, 0, 0, 0],
     published: false,
-    creator_number: undefined,
+    creator_number: 0,
   });
 
   const storage = getStorage();
@@ -166,12 +174,22 @@ export default function CreateQuest({ navigation, route }: CreationFormType) {
   }
   function PublishQuest(): void {
     // Data Validation
-    addDoc(quests, { ...form, creator: context.userID, published: true }).then(
-      () => {
-        console.log('Quest Submitted');
-        navigation.pop();
-      },
-    );
+    addDoc(quests, {
+      ...form,
+      creator: context.userID,
+      published: true,
+      location:
+        form.lat !== undefined && form.lng !== undefined
+          ? new GeoPoint(form.lat, form.lng)
+          : new GeoPoint(0, 0),
+      geohash:
+        form.lat !== undefined && form.lng !== undefined
+          ? geohashForLocation([form.lat, form.lng])
+          : geohashForLocation([0, 0]),
+    }).then(() => {
+      console.log('Quest Submitted');
+      navigation.pop();
+    });
   }
 
   return (

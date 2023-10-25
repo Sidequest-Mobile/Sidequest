@@ -1,7 +1,7 @@
 import * as Location from 'expo-location';
 import { collection, doc, getDoc } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { Button, Modal, Text, View } from 'react-native';
+import { Button, Text, View } from 'react-native';
 import firebase from '../firebase';
 
 const questConnect = collection(firebase.firestore, '/quests');
@@ -13,7 +13,6 @@ function ValidateLocation({ navigation, route }) {
 
   useEffect(() => {
     getQuest().then(quest => {
-      console.log(quest);
       setLatitude(quest.lat);
       setLng(quest.lng);
       setLoaded(true);
@@ -33,26 +32,27 @@ function ValidateLocation({ navigation, route }) {
     let currentPosition = await Location.getCurrentPositionAsync({});
     let a = lat - currentPosition.coords.latitude;
     let b = lng - currentPosition.coords.longitude;
-    let dist = Math.sqrt(a * a + b * b);
-    console.log(dist);
+    let dist = Math.sqrt(a * a + b * b) * 69; // in miles
+    console.log(dist * 69);
     console.log(lat);
     console.log(lng);
+    if (dist < 1) {
+      navigation.navigate('Rate', { id: route.params.id });
+    } else {
+      setFailed(true);
+    }
   }
 
   return (
     <View>
       {loaded && <Text> Getting Necessary Datas</Text>}
       <Text>List of Quests in progress as tiles</Text>
-      {loaded || (
+      {loaded && (
         <>
           <Button title="Test Location" onPress={getLoc}></Button>
-
-          <Button
-            title="Go to Rate"
-            onPress={e => navigation.navigate('Rate')}></Button>
         </>
       )}
-      {failed && <Modal></Modal>}
+      {failed && <Text>You Failed!</Text>}
     </View>
   );
 }

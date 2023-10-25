@@ -1,5 +1,5 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { GeoPoint } from 'firebase/firestore';
+import { GeoPoint, Timestamp } from 'firebase/firestore';
 
 export type CreateQuestStackType = {
   Me: undefined;
@@ -71,3 +71,16 @@ export type CreationFormType = NativeStackScreenProps<
   CreateQuestStackType,
   'Create'
 >;
+
+export type Quest_Instance_Type = {
+  comments?: Array<string>;
+  completion_status: 'In Progress' | 'Completed' | 'Dropped';
+  likes: number;
+  location?: GeoPoint;
+  pic?: string;
+  questID: string;
+  time_completed?: Timestamp;
+  time_started: Timestamp;
+  time_to_complete?: number;
+  userID: string;
+};
