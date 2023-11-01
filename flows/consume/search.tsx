@@ -8,6 +8,7 @@ import {
 } from 'firebase/firestore';
 import React, { useState } from 'react';
 import { Button, Pressable, Text, TextInput, View } from 'react-native';
+import QuestCard from '../components/questCard';
 import firebase from '../firebase';
 const questCollection = collection(firebase.firestore, '/quests');
 
@@ -16,7 +17,7 @@ type filters = {
   distance?: QueryFieldFilterConstraint;
   type: Array<QueryFieldFilterConstraint>;
 };
-const Search = ({}) => {
+const Search = ({ navigation }) => {
   const [wheres, setWheres] = useState({
     type: [],
     tags: [],
@@ -33,7 +34,7 @@ const Search = ({}) => {
     maxDistance: 0,
   });
 
-  const [quests, setQuests] = useState({});
+  const [quests, setQuests] = useState('Not Loaded');
 
   function addFilter() {
     let newWhere: QueryFieldFilterConstraint;
@@ -87,19 +88,62 @@ const Search = ({}) => {
     if (filterDisplay.maxDistance === 0) {
       const q = query(questCollection, ...wheres.type, ...wheres.tags);
       getDocs(q).then(docs => {
+        console.log(docs.docs[0].data);
         if (docs.size) {
+          let filteredDocs = [...docs.docs];
           if (filterDisplay.targetDifficulty) {
-            docs.docs.filter(doc => {
-              let difficulty = [...doc.data.difficulty_rating].slice(0, 5);
+            filteredDocs.sort((doc1, doc2) => {
+              let difficulty1 = averageRating(
+                [...doc1.data().difficulty_rating].slice(0, 5),
+              );
+              let difficulty2 = averageRating(
+                [...doc2.data().difficulty_rating].slice(0, 5),
+              );
+              let dif1 = Math.abs(difficulty1 - filterDisplay.targetDifficulty);
+              let dif2 = Math.abs(difficulty2 - filterDisplay.targetDifficulty);
+              return dif1 - dif2; // may need to switch order.
             });
           }
+
           if (filterDisplay.textIncludes.length) {
+            filteredDocs = filteredDocs.filter(doc => {
+              for (let str of filterDisplay.textIncludes) {
+                if (
+                  !(
+                    doc.data().tagline.includes(str) ||
+                    doc.data().description.includes(str)
+                  )
+                ) {
+                  return false;
+                }
+              }
+              return true;
+            });
           }
+
           if (filterDisplay.minimumAverageRating) {
+            filteredDocs = filteredDocs.filter(doc => {
+              let averageR = averageRating([
+                ...doc.data().quality_rating.slice(0, 5),
+              ]);
+              return averageR >= filterDisplay.minimumAverageRating;
+            });
           }
+          setQuests(
+            filteredDocs.map(doc => {
+              return { ...doc.data(), id: doc.id };
+            }),
+          );
+          console.log(filteredDocs.map(doc => doc.data()));
         }
       });
     }
+  }
+
+  function averageRating(arr) {
+    let count = arr.reduce((acc, curr) => acc + curr, 0);
+    let total = arr.reduce((acc, curr, ind) => acc + curr * (ind + 1), 0);
+    return count !== 0 ? total / count : 0;
   }
 
   return (
@@ -221,7 +265,38 @@ const Search = ({}) => {
         )}
       </View>
       <View>
+        <View>
+          <Button title="Add Filter" onPress={runQuery} />
+        </View>
+      </View>
+      <View>
         <Text> Where We'll Store Results of a Search</Text>
+        {quests !== 'Not Loaded' &&
+          quests.map(quest => {
+            let nav = function () {
+              navigation.navigate('Quest', { id: quest.id });
+            };
+            return (
+              <QuestCard
+                name={quest.questID}
+                description={
+                  quest !== undefined ? quest.description : 'no Description'
+                }
+                location={
+                  quest !== undefined
+                    ? 'Latitude' + quest.lat + 'Longitude' + quest.lng
+                    : 'no Description'
+                }
+                picture={
+                  quest !== undefined &&
+                  quest.quest_image_location !== undefined
+                    ? quest.quest_image_location
+                    : 'questMain_userID_iulgm135F0R0g84PcLfUQF5dSkz2_QuestNumber_1'
+                }
+                onPress={nav}
+              />
+            );
+          })}
       </View>
     </View>
   );
