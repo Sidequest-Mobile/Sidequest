@@ -1,6 +1,6 @@
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import React, { useContext, useEffect, useState } from 'react';
-import { Button, Text, View } from 'react-native';
+import { Button, ScrollView, Text, View } from 'react-native';
 import { appContext } from '../../App';
 import QuestCard from '../components/questCard';
 import firebase from '../firebase';
@@ -37,7 +37,10 @@ function MyCreatedQuests({ navigation }) {
     <View>
       <Text>Your Created Quests</Text>
       <Text>Scrollable view map of your Quests</Text>
-      <View>
+      <Button
+        title="Go to Quest Creator"
+        onPress={e => navigation.navigate('Create')}></Button>
+      <ScrollView>
         {retrieved && (
           <>
             {empty || (
@@ -74,11 +77,8 @@ function MyCreatedQuests({ navigation }) {
             {empty && <Text>No Created Quests</Text>}
           </>
         )}
-      </View>
+      </ScrollView>
       <Text>Works in Progress</Text>
-      <Button
-        title="Go to Quest Creator"
-        onPress={e => navigation.navigate('Create')}></Button>
     </View>
   );
 }
