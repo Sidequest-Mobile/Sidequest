@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-function QuestStats({ navigation }) {
+function QuestStats({ navigation, route }) {
   return (
     <View>
       <Text>
