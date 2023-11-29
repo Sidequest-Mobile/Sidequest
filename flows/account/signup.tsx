@@ -41,12 +41,13 @@ function Signup({ navigation }) {
             value={email}
             onChangeText={e => setEmail(e)}
             style={styles.inputField}
-            placeholderTextColor="#985E39"></TextInput>
+            placeholderTextColor="#c28f67"></TextInput>
           <TextInput
             placeholder="password"
             value={password}
             onChangeText={e => setPassword(e)}
-            style={styles.inputPassword}></TextInput>
+            style={styles.inputPassword}
+            placeholderTextColor="#c28f67"></TextInput>
           <Pressable onPress={onSignupPress} style={styles.signupButton}>
             <Text style={styles.signupButtonText}>Sign Up</Text>
           </Pressable>
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: '#985E39',
+    borderColor: '#E39849',
   },
   titleText: {
     color: 'white',
@@ -107,13 +108,15 @@ const styles = StyleSheet.create({
   inputField: {
     paddingBottom: 8,
     color: '#985E39',
+    fontSize: 15,
     borderBottomWidth: 2,
     borderBottomColor: 'rgb(194,143,103)',
   },
   inputPassword: {
     paddingBottom: 8,
-    marginTop: 10,
+    marginTop: 15,
     color: '#985E39',
+    fontSize: 15,
     borderBottomWidth: 2,
     borderBottomColor: 'rgb(194,143,103)',
   },
@@ -127,8 +130,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 25,
   },
   signupButtonText: {
-    padding: 5,
     color: '#985E39',
+    fontSize: 18,
+    fontWeight: 'bold',
+    paddingVertical: 8,
   },
   footer: {
     alignSelf: 'flex-start',
