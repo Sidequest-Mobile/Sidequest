@@ -7,7 +7,11 @@ const Stack = createStackNavigator<AuthStackType>();
 function AuthStack({}) {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="signup" component={Signup} />
+      <Stack.Screen
+        name="signup"
+        component={Signup}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen name="login" component={Login} />
     </Stack.Navigator>
   );

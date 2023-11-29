@@ -1,7 +1,15 @@
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import React, { useContext, useState } from 'react';
-import { Button, Pressable, Text, TextInput, View } from 'react-native';
-import { appContext } from '../../App.tsx';
+import {
+  Button,
+  ImageBackground,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { appContext } from '../../App';
 import firebase from '../firebase.js';
 
 function Signup({ navigation }) {
@@ -18,23 +26,40 @@ function Signup({ navigation }) {
     );
   }
   return (
-    <View>
-      <Pressable onPress={() => navigation.navigate('login')}>
-        <Text>I already have an Account</Text>
-      </Pressable>
-      <Text>SignUp</Text>
-      <TextInput
-        placeholder="YourEmail@mailprovider.com"
-        value={email}
-        onChangeText={e => setEmail(e)}></TextInput>
-      <Text>Password</Text>
-      <TextInput
-        placeholder="*****"
-        value={password}
-        onChangeText={e => setPassword(e)}></TextInput>
-      <Button title="Sign Up" onPress={onSignupPress}></Button>
-    </View>
+    <ImageBackground
+      source={require('../../assets/loginBg.png')}
+      style={styles.backgroundImage}>
+      <View>
+        <Pressable onPress={() => navigation.navigate('login')}>
+          <Text>I already have an Account</Text>
+        </Pressable>
+        <Text>SignUp</Text>
+        <TextInput
+          placeholder="YourEmail@mailprovider.com"
+          value={email}
+          onChangeText={e => setEmail(e)}></TextInput>
+        <Text>Password</Text>
+        <TextInput
+          placeholder="*****"
+          value={password}
+          onChangeText={e => setPassword(e)}></TextInput>
+        <Button title="Sign Up" onPress={onSignupPress}></Button>
+      </View>
+    </ImageBackground>
   );
 }
+
+Signup.navigationOptions = {
+  headerShown: false,
+};
+
+const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    resizeMode: 'cover',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
 
 export default Signup;
