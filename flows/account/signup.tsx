@@ -47,7 +47,8 @@ function Signup({ navigation }) {
             value={password}
             onChangeText={e => setPassword(e)}
             style={styles.inputPassword}
-            placeholderTextColor="#c28f67"></TextInput>
+            placeholderTextColor="#c28f67"
+            secureTextEntry={true}></TextInput>
           <Pressable onPress={onSignupPress} style={styles.signupButton}>
             <Text style={styles.signupButtonText}>Sign Up</Text>
           </Pressable>
