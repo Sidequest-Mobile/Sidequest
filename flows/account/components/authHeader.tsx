@@ -1,30 +1,36 @@
 import React from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, ImageBackground, StyleSheet, View } from 'react-native';
 
 export default function AuthHeader() {
   return (
     <View style={styles.headerContainer}>
-      <Image
+      <ImageBackground
         source={require('../../../assets/LoginHeader.png')}
-        style={styles.headerImage}
-      />
+        style={styles.headerImage}>
+        <Image
+          source={require('../../../assets/SideQuest.png')}
+          style={styles.headerText}
+        />
+      </ImageBackground>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   headerContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    zIndex: 2,
+    marginTop: -20,
+    height: '30%',
+    width: '110%',
+    zIndex: 1,
   },
   headerImage: {
-    width: '100%',
+    flex: 1,
     resizeMode: 'cover',
+    alignItems: 'center',
+  },
+  headerText: {
+    marginTop: 65,
+    width: '50%',
+    resizeMode: 'contain',
   },
 });
